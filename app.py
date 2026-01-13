@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Clarisse - English Learning", layout="centered")
 
-st.write("### 🎓 Apprentissage visuel intégral avec Clarisse")
+st.write("### 🎓 Apprendre et Répéter avec Clarisse")
 
 clarisse_html = """
 <!DOCTYPE html>
@@ -35,7 +35,7 @@ clarisse_html = """
         <div id="step-name" class="hidden" style="margin-top:20px;">
             <input type="text" id="user-name" style="padding:12px; width:75%; border-radius:8px; border:2px solid #ddd;" placeholder="Entre ton prénom...">
             <br>
-            <button id="submit-name" class="btn-start">C'est mon prénom</button>
+            <button id="submit-name" class="btn-start">Valider</button>
         </div>
 
         <div id="step-level" class="hidden" style="margin-top:20px;">
@@ -57,37 +57,46 @@ clarisse_html = """
         const fullProgram = [
             { 
                 module: "Étape 1 : Grammaire Fondamentale",
-                text: "Commençons par les bases. Les pronoms personnels sont essentiels pour désigner qui parle ou de qui on parle.", 
-                rule: "I (Je), You (Tu), He (Il), She (Elle)\\nIt (Chose), We (Nous), They (Ils)" 
+                text: "Commençons par les bases. Les pronoms personnels sont essentiels. Répète après moi :", 
+                rule: "I, You, He, She, It, We, They" 
             },
             { 
                 module: "Étape 2 : Verbes Être et Avoir",
-                text: "Maintenant, le verbe ÊTRE (To Be) pour l'identité et le verbe AVOIR (To Have) pour la possession.", 
-                rule: "I am (Je suis) / I have (J'ai)\\nYou are (Tu es) / You have (Tu as)\\nHe/She is (Il/Elle est) / He/She HAS (Il/Elle a)" 
+                text: "Maintenant, les verbes piliers. Écoute et répète :", 
+                rule: "I am, I have. You are, You have. He is, He has." 
             },
             { 
                 module: "Étape 3 : Construction de phrases",
-                text: "Utilisons ce que nous avons appris pour créer tes premières phrases simples. Répète après moi.", 
-                rule: "I am happy. (Je suis heureux)\\nI have a car. (J'ai une voiture)\\nShe is a friend. (Elle est une amie)" 
+                text: "Utilisons cela dans des phrases simples. Répète après moi :", 
+                rule: "I am happy. I have a car. She is a friend." 
             }
         ];
 
-        function speakAndShow(text) {
-            // Affiche le texte immédiatement
-            textOutput.innerText = text;
-            // Lance la voix
+        function speakSequence(instructions, englishText) {
+            textOutput.innerText = instructions;
             window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = 'fr-FR';
-            utter.rate = 1.25;
-            window.speechSynthesis.speak(utter);
+
+            // 1. Lecture de l'instruction en français
+            const utterFR = new SpeechSynthesisUtterance(instructions);
+            utterFR.lang = 'fr-FR';
+            utterFR.rate = 1.2;
+
+            // 2. Lecture du texte anglais (après la fin du français)
+            utterFR.onend = function() {
+                const utterEN = new SpeechSynthesisUtterance(englishText);
+                utterEN.lang = 'en-US'; // On change la langue pour le bon accent !
+                utterEN.rate = 0.9;    // Un peu plus lent pour bien entendre
+                window.speechSynthesis.speak(utterEN);
+            };
+
+            window.speechSynthesis.speak(utterFR);
         }
 
         document.getElementById('launch-btn').onclick = function() {
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('step-name').classList.remove('hidden');
-            const intro = "Bonjour ! Je me présente, je m'appelle Clarisse, ton IA dédiée à l'apprentissage de l'anglais. Et toi, comment t'appelles-tu ?";
-            speakAndShow(intro);
+            const intro = "Bonjour ! Je me présente, je m'appelle Clarisse. Ton IA dédiée à l'anglais. Comment t'appelles-tu ?";
+            speakSequence(intro, "");
         };
 
         document.getElementById('submit-name').onclick = function() {
@@ -95,8 +104,8 @@ clarisse_html = """
             if(userName.trim() !== "") {
                 document.getElementById('step-name').classList.add('hidden');
                 document.getElementById('step-level').classList.remove('hidden');
-                const welcome = "Enchantée " + userName + ". Nous allons suivre un programme en 3 étapes. Quel est ton niveau actuel ?";
-                speakAndShow(welcome);
+                const welcome = "Enchantée " + userName + ". Commençons ton programme en 3 étapes.";
+                speakSequence(welcome, "");
             }
         };
 
@@ -113,14 +122,15 @@ clarisse_html = """
             if (currentStep < fullProgram.length) {
                 const data = fullProgram[currentStep];
                 moduleTitle.innerText = data.module;
-                grammarZone.innerText = data.rule.replace(/\\\\n/g, '\\n');
-                speakAndShow(data.text);
+                grammarZone.innerText = data.rule;
+                // Elle lit l'explication PUIS la règle en anglais
+                speakSequence(data.text, data.rule);
             } else {
-                const fin = "Félicitations " + userName + " ! C'est bien. Tu as validé les 3 étapes de base. À bientôt pour la suite !";
-                moduleTitle.innerText = "PROGRAMME TERMINÉ";
-                grammarZone.innerText = "✅ Session terminée !";
+                const fin = "Félicitations " + userName + " ! C'est bien. Tu as terminé les trois étapes. À bientôt !";
+                moduleTitle.innerText = "FIN DU MODULE";
+                grammarZone.innerText = "✅ Bravo !";
                 document.getElementById('next-btn').style.display = 'none';
-                speakAndShow(fin);
+                speakSequence(fin, "");
             }
         }
 
