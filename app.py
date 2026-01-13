@@ -72,7 +72,7 @@ clarisse_html = """
             textOutput.innerText = msg;
             const utter = new SpeechSynthesisUtterance(msg);
             utter.lang = 'fr-FR';
-            utter.rate = 1.25; // Vitesse réglée à 1.25 selon ta demande
+            utter.rate = 1.25; 
             if (onEndCallback) utter.onend = onEndCallback;
             window.speechSynthesis.speak(utter);
         }
@@ -123,4 +123,31 @@ clarisse_html = """
             document.getElementById('step-level').classList.add('hidden');
             document.getElementById('course-screen').classList.remove('hidden');
             speakStep("C'est noté. Commençons le niveau " + level + ".", []);
-            show
+            showStep();
+        }
+
+        function showStep() {
+            const grammarZone = document.getElementById('grammar-zone');
+            if (currentStep < fullProgram.length) {
+                const data = fullProgram[currentStep];
+                grammarZone.innerText = data.rule.replace(/\\\\n/g, '\\n');
+                speakStep(data.text, data.pairs);
+            } else {
+                const fin = "Félicitations " + userName + " ! C'est bien.";
+                grammarZone.innerText = "✅ Session terminée !";
+                document.getElementById('next-btn').style.display = 'none';
+                speakStep(fin, []);
+            }
+        }
+
+        document.getElementById('next-btn').onclick = () => {
+            currentStep++;
+            showStep();
+        };
+    </script>
+</body>
+</html>
+"""
+
+components.html(clarisse_html, height=800)
+E
