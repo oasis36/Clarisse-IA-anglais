@@ -12,7 +12,8 @@ clarisse_html = """
     <meta charset="UTF-8">
     <style>
         .main-container { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background-color: #f4f7f6; border-radius: 15px; border: 1px solid #ddd; max-width: 650px; margin: auto; }
-        .btn-start { padding: 12px 25px; font-size: 15px; cursor: pointer; border-radius: 10px; background-color: #4CAF50; color: white; border: none; font-weight: bold; margin: 10px; display: inline-block; width: 85%; }
+        .btn-start { padding: 12px 25px; font-size: 15px; cursor: pointer; border-radius: 10px; background-color: #4CAF50; color: white; border: none; font-weight: bold; margin: 10px; display: inline-block; width: 85%; line-height: 1.2; }
+        .btn-start small { font-weight: normal; font-size: 0.85rem; display: block; margin-top: 4px; opacity: 0.9; }
         
         .speech-bubble { margin-top: 15px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: left; border-left: 6px solid #4CAF50; }
         
@@ -67,9 +68,18 @@ clarisse_html = """
         </div>
 
         <div id="step-level" class="hidden" style="margin-top:20px;">
-            <button class="btn-start" onclick="initLesson('Débutant')"><b>Débutant</b></button>
-            <button class="btn-start" style="background-color: #FF9800;" onclick="initLesson('Intermédiaire')"><b>Intermédiaire</b></button>
-            <button class="btn-start" style="background-color: #9C2774;" onclick="initLesson('Avancé')"><b>Avancé</b></button>
+            <button class="btn-start" onclick="initLesson('Débutant')">
+                <b>Débutant</b>
+                <small>(Accent sur la grammaire et les bases fondamentales)</small>
+            </button>
+            <button class="btn-start" style="background-color: #FF9800;" onclick="initLesson('Intermédiaire')">
+                <b>Intermédiaire</b>
+                <small>(Fluidité et expressions courantes)</small>
+            </button>
+            <button class="btn-start" style="background-color: #9C2774;" onclick="initLesson('Avancé')">
+                <b>Avancé</b>
+                <small>(Perfectionnement et nuances)</small>
+            </button>
         </div>
 
         <div id="course-screen" class="hidden" style="margin-top:20px;">
