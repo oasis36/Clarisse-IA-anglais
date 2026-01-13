@@ -56,7 +56,7 @@ clarisse_html = """
         
         const fullProgram = [
             { 
-                text: "Étape 1 : Les pronoms personnels. Écoute bien :", 
+                text: "Étape 1 : Les pronoms personnels. Écoute bien la prononciation :", 
                 rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle \\n We = Nous \\n They = Ils",
                 pairs: [["I", "Je"], ["You", "Tu"], ["He", "Il"], ["She", "Elle"], ["We", "Nous"], ["They", "Ils"]]
             },
@@ -96,7 +96,7 @@ clarisse_html = """
                         utterFR.lang = 'fr-FR';
                         utterFR.rate = 1.25;
                         window.speechSynthesis.speak(utterFR);
-                    }, index * 400); 
+                    }, index * 450); 
                 });
             };
             window.speechSynthesis.speak(utterIntro);
@@ -108,6 +108,45 @@ clarisse_html = """
             speakText("Bonjour. Je me présente, je m'appelle Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage de l'anglais, mais nous pouvons parler de tout ensemble. Pour commencer, comment t'appelles-tu ?");
         };
 
-        document.getElementById('submit-name').onclick = function
-Envoyé
-Écrire à
+        document.getElementById('submit-name').onclick = function() {
+            userName = document.getElementById('user-name').value;
+            if(userName.trim() !== "") {
+                document.getElementById('step-name').classList.add('hidden');
+                const phraseAccueil = "Enchantée " + userName + ". Y a-t-il un sujet qui te tient à cœur que tu veux que nous commencions à discuter ? À tout moment, tu peux interrompre la leçon et demander une rectification en français pour que je puisse t'expliquer les phrases. Pour commencer notre programme, quel est ton niveau actuel ?";
+                speakText(phraseAccueil, function() {
+                    document.getElementById('step-level').classList.remove('hidden');
+                });
+            }
+        };
+
+        function initLesson(level) {
+            document.getElementById('step-level').classList.add('hidden');
+            document.getElementById('course-screen').classList.remove('hidden');
+            speakStep("C'est noté. Commençons le niveau " + level + ".", []);
+            showStep();
+        }
+
+        function showStep() {
+            const grammarZone = document.getElementById('grammar-zone');
+            if (currentStep < fullProgram.length) {
+                const data = fullProgram[currentStep];
+                grammarZone.innerText = data.rule.replace(/\\\\n/g, '\\n');
+                speakStep(data.text, data.pairs);
+            } else {
+                const fin = "Félicitations " + userName + " ! C'est bien.";
+                grammarZone.innerText = "✅ Session terminée !";
+                document.getElementById('next-btn').style.display = 'none';
+                speakStep(fin, []);
+            }
+        }
+
+        document.getElementById('next-btn').onclick = () => {
+            currentStep++;
+            showStep();
+        };
+    </script>
+</body>
+</html>
+"""
+
+components.html(clarisse_html, height=800)
