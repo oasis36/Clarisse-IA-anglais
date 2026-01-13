@@ -54,7 +54,7 @@ clarisse_html = """
         
         const fullProgram = [
             { 
-                text: "Étape 1 : Les pronoms personnels. Je te donne le mot anglais et sa traduction :", 
+                text: "Étape 1 : Les pronoms. Je te donne le mot anglais et sa traduction :", 
                 rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle \\n We = Nous \\n They = Ils",
                 pairs: [["I", "Je"], ["You", "Tu"], ["He", "Il"], ["She", "Elle"], ["We", "Nous"], ["They", "Ils"]]
             },
@@ -88,7 +88,7 @@ clarisse_html = """
                         utterFR.lang = 'fr-FR';
                         utterFR.rate = 1.0;
                         window.speechSynthesis.speak(utterFR);
-                    }, index * 100); 
+                    }, index * 200); 
                 });
             };
             window.speechSynthesis.speak(utterIntro);
@@ -141,5 +141,3 @@ clarisse_html = """
 """
 
 components.html(clarisse_html, height=750)
-Envoyé
-Écrire à
