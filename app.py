@@ -14,6 +14,7 @@ clarisse_html = """
         .main-container { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background-color: #f4f7f6; border-radius: 15px; border: 1px solid #ddd; max-width: 650px; margin: auto; }
         .btn-start { padding: 12px 25px; font-size: 16px; cursor: pointer; border-radius: 10px; background-color: #4CAF50; color: white; border: none; font-weight: bold; margin: 10px; }
         .btn-next { background-color: #2196F3; }
+        .hidden { display: none; }
         .speech-bubble { margin-top: 15px; font-size: 1.1rem; color: #1a1a1a; line-height: 1.5; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-height: 60px; text-align: left; border-left: 6px solid #4CAF50; }
         .grammar-box { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; font-family: 'Segoe UI', sans-serif; font-weight: bold; color: #e65100; font-size: 1.2rem; white-space: pre-wrap; text-align: center; border: 1px dashed #e65100; }
         .clarisse-label { font-weight: bold; color: #4CAF50; text-transform: uppercase; font-size: 0.8rem; }
@@ -55,7 +56,6 @@ clarisse_html = """
             { 
                 text: "Étape 1 : Les pronoms personnels. Je te donne le mot anglais et sa traduction :", 
                 rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle \\n We = Nous \\n They = Ils",
-                // Format : [Anglais, Français]
                 pairs: [["I", "Je"], ["You", "Tu"], ["He", "Il"], ["She", "Elle"], ["We", "Nous"], ["They", "Ils"]]
             },
             { 
@@ -73,21 +73,17 @@ clarisse_html = """
         function speakStep(frIntro, pairs) {
             window.speechSynthesis.cancel();
             textOutput.innerText = frIntro;
-
             const utterIntro = new SpeechSynthesisUtterance(frIntro);
             utterIntro.lang = 'fr-FR';
             
             utterIntro.onend = function() {
-                // Pour chaque paire [Anglais, Français]
                 pairs.forEach((pair, index) => {
                     setTimeout(() => {
-                        // 1. Dire l'Anglais avec l'accent US
                         const utterEN = new SpeechSynthesisUtterance(pair[0]);
                         utterEN.lang = 'en-US';
                         utterEN.rate = 0.8;
                         window.speechSynthesis.speak(utterEN);
 
-                        // 2. Dire "veut dire" + le Français avec l'accent FR
                         const utterFR = new SpeechSynthesisUtterance("veut dire " + pair[1]);
                         utterFR.lang = 'fr-FR';
                         utterFR.rate = 1.0;
@@ -142,3 +138,8 @@ clarisse_html = """
     </script>
 </body>
 </html>
+"""
+
+components.html(clarisse_html, height=750)
+Envoyé
+Écrire à
