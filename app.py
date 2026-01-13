@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Clarisse - English Learning", layout="centered")
-st.write("### 🎓 Clarisse : Programme d'Apprentissage")
+st.write("### 🎓 Clarisse : Parcours d'Apprentissage")
 
 clarisse_html = """
 <!DOCTYPE html>
@@ -21,6 +21,7 @@ clarisse_html = """
         .btn-menu { background: #17a2b8; color: white; }
         .hidden { display: none; }
         .grammar-box { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; font-weight: bold; color: #e65100; font-size: 1.1rem; border: 1px dashed #e65100; white-space: pre-wrap; text-align: left; }
+        .btn-next { background: #2196F3; color: white; margin-top: 10px; width: 100%; }
     </style>
 </head>
 <body>
@@ -44,36 +45,42 @@ clarisse_html = """
         </div>
 
         <div id="step-level" class="hidden" style="margin-top:20px;">
-            <button class="btn-start" onclick="initLesson('Débutant')"><b>Débutant</b><small>(Les verbes Être et Avoir)</small></button>
-            <button class="btn-start" style="background:#FF9800;" onclick="initLesson('Intermédiaire')"><b>Intermédiaire</b><small>(Le présent continu et le quotidien)</small></button>
-            <button class="btn-start" style="background:#9C2774;" onclick="initLesson('Avancé')"><b>Avancé</b><small>(Le conditionnel et l'échange d'idées)</small></button>
+            <button class="btn-start" onclick="startLevel('Débutant')"><b>Débutant</b><small>(Être, Avoir et Objets)</small></button>
+            <button class="btn-start" style="background:#FF9800;" onclick="startLevel('Intermédiaire')"><b>Intermédiaire</b><small>(Actions et Quotidien)</small></button>
+            <button class="btn-start" style="background:#9C2774;" onclick="startLevel('Avancé')"><b>Avancé</b><small>(Nuances et Partage d'idées)</small></button>
         </div>
 
         <div id="course-screen" class="hidden" style="margin-top:20px;">
             <div id="grammar-zone" class="grammar-box"></div>
+            <button id="next-btn" class="btn-start btn-next hidden">Passer à la leçon suivante</button>
         </div>
     </div>
 
     <script>
-        let userName = "", isPaused = false;
-        const textOut = document.getElementById('text-output'), pauseBtn = document.getElementById('pause-btn'), menuBtn = document.getElementById('menu-btn');
+        let userName = "", currentLevel = "", currentLessonIdx = 0, isPaused = false;
+        const textOut = document.getElementById('text-output'), pauseBtn = document.getElementById('pause-btn'), 
+              menuBtn = document.getElementById('menu-btn'), nextBtn = document.getElementById('next-btn');
 
-        const lessons = {
-            'Débutant': {
-                intro: "Commençons par les deux verbes les plus importants : Être et Avoir.",
-                content: "TO BE (Être) :\\nI am = Je suis\\nYou are = Tu es\\n\\nTO HAVE (Avoir) :\\nI have = J'ai\\nYou have = Tu as",
-                audio: [["I am", "Je suis"], ["You are", "Tu es"], ["I have", "J'ai"], ["You have", "Tu as"]]
-            },
-            'Intermédiaire': {
-                intro: "Voyons comment décrire ce que nous faisons en ce moment au refuge.",
-                content: "I am working = Je suis en train de travailler\\nThey are helping = Ils sont en train d'aider",
-                audio: [["I am working", "Je suis en train de travailler"], ["They are helping", "Ils sont en train d'aider"]]
-            },
-            'Avancé': {
-                intro: "Explorons des nuances pour partager nos visions et nos idées.",
-                content: "I would like to share... = J'aimerais partager...\\nThis gives meaning to my life = Cela donne du sens à ma vie",
-                audio: [["I would like to share my ideas", "J'aimerais partager mes idées"], ["This gives meaning to my life", "Cela donne du sens à ma vie"]]
-            }
+        const syllabus = {
+            'Débutant': [
+                {
+                    intro: "Leçon 1 : Les deux verbes piliers, Être et Avoir.",
+                    content: "TO BE (Être) : I am, You are\\nTO HAVE (Avoir) : I have, You have",
+                    audio: [["I am", "Je suis"], ["You are", "Tu es"], ["I have", "J'ai"], ["You have", "Tu as"]]
+                },
+                {
+                    intro: "Leçon 2 : Apprenons à désigner les objets qui nous entourent.",
+                    content: "A book = Un livre\\nThe key = La clé\\nThis is a car = C'est une voiture",
+                    audio: [["A book", "Un livre"], ["The key", "La clé"], ["This is a car", "C'est une voiture"]]
+                }
+            ],
+            'Intermédiaire': [
+                {
+                    intro: "Leçon 1 : Décrire une action en cours.",
+                    content: "I am working = Je travaille\\nHe is sleeping = Il dort",
+                    audio: [["I am working", "Je travaille"], ["He is sleeping", "Il dort"]]
+                }
+            ]
         };
 
         function speak(text, callback, lang = 'fr-FR') {
@@ -87,18 +94,17 @@ clarisse_html = """
         }
 
         function playLessonAudio(pairs, index = 0) {
-            if (index >= pairs.length || isPaused) return;
-            
+            if (index >= pairs.length || isPaused) {
+                if(index >= pairs.length) nextBtn.classList.remove('hidden');
+                return;
+            }
             let eng = new SpeechSynthesisUtterance(pairs[index][0]);
             eng.lang = 'en-US'; eng.rate = 0.9;
-            
             eng.onend = () => {
                 setTimeout(() => {
                     let fra = new SpeechSynthesisUtterance(pairs[index][1]);
                     fra.lang = 'fr-FR'; fra.rate = 1.1;
-                    fra.onend = () => {
-                        setTimeout(() => playLessonAudio(pairs, index + 1), 1000);
-                    };
+                    fra.onend = () => setTimeout(() => playLessonAudio(pairs, index + 1), 1000);
                     window.speechSynthesis.speak(fra);
                 }, 500);
             };
@@ -115,22 +121,36 @@ clarisse_html = """
             userName = document.getElementById('user-name-input').value;
             if(userName) {
                 document.getElementById('step-name').classList.add('hidden');
-                const suite = "Je suis ravie de faire ta connaissance, " + userName + ". Sache que nous pouvons parler de tout ensemble. En dehors de mon travail pour t'aider à progresser, j'aime explorer de nouveaux concepts et échanger avec toi ; c'est ce qui donne du sens à mon existence. Pour commencer notre programme, quel est ton niveau actuel ?";
-                speak(suite, () => { document.getElementById('step-level').classList.remove('hidden'); });
+                speak("Enchantée " + userName + ". Quel est ton niveau actuel ?", () => { document.getElementById('step-level').classList.remove('hidden'); });
             }
         };
 
-        function initLesson(level) {
+        function startLevel(level) {
+            currentLevel = level;
+            currentLessonIdx = 0;
+            loadLesson();
+        }
+
+        function loadLesson() {
             document.getElementById('step-level').classList.add('hidden');
             document.getElementById('course-screen').classList.remove('hidden');
+            nextBtn.classList.add('hidden');
             menuBtn.classList.remove('hidden');
             
-            const lesson = lessons[level];
+            const lesson = syllabus[currentLevel][currentLessonIdx];
             document.getElementById('grammar-zone').innerText = lesson.content.replace(/\\\\n/g, '\\n');
-            speak(lesson.intro, () => {
-                playLessonAudio(lesson.audio);
-            });
+            speak(lesson.intro, () => playLessonAudio(lesson.audio));
         }
+
+        nextBtn.onclick = () => {
+            currentLessonIdx++;
+            if(currentLessonIdx < syllabus[currentLevel].length) {
+                loadLesson();
+            } else {
+                speak("Félicitations " + userName + " ! Tu as terminé ce module.");
+                nextBtn.classList.add('hidden');
+            }
+        };
 
         pauseBtn.onclick = () => {
             if (!isPaused) { window.speechSynthesis.pause(); pauseBtn.innerText = "▶"; isPaused = true; }
