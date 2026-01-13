@@ -40,7 +40,7 @@ clarisse_html = """
         <div id="step-level" class="hidden" style="margin-top:20px;">
             <button class="btn-start" onclick="initLesson('Débutant')"><b>Débutant</b><br><small>(Grammaire et bases fondamentales)</small></button>
             <button class="btn-start" style="background-color: #FF9800;" onclick="initLesson('Intermédiaire')"><b>Intermédiaire</b><br><small>(Fluidité et expressions courantes)</small></button>
-            <button class="btn-start" style="background-color: #9C27B0;" onclick="initLesson('Avancé')"><b>Avancé</b><br><small>(Perfectionnement et nuances)</small></button>
+            <button class="btn-start" style="background-color: #9C2774;" onclick="initLesson('Avancé')"><b>Avancé</b><br><small>(Perfectionnement et nuances)</small></button>
         </div>
 
         <div id="course-screen" class="hidden" style="margin-top:20px;">
@@ -56,7 +56,7 @@ clarisse_html = """
         
         const fullProgram = [
             { 
-                text: "Étape 1 : Les pronoms. Je te donne le mot anglais et sa traduction :", 
+                text: "Étape 1 : Les pronoms personnels. Je te donne le mot anglais et sa traduction :", 
                 rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle \\n We = Nous \\n They = Ils",
                 pairs: [["I", "Je"], ["You", "Tu"], ["He", "Il"], ["She", "Elle"], ["We", "Nous"], ["They", "Ils"]]
             },
@@ -72,7 +72,7 @@ clarisse_html = """
             textOutput.innerText = msg;
             const utter = new SpeechSynthesisUtterance(msg);
             utter.lang = 'fr-FR';
-            utter.rate = 1.05;
+            utter.rate = 1.25; // Vitesse réglée à 1.25 selon ta demande
             if (onEndCallback) utter.onend = onEndCallback;
             window.speechSynthesis.speak(utter);
         }
@@ -82,19 +82,21 @@ clarisse_html = """
             textOutput.innerText = frIntro;
             const utterIntro = new SpeechSynthesisUtterance(frIntro);
             utterIntro.lang = 'fr-FR';
+            utterIntro.rate = 1.25; 
             
             utterIntro.onend = function() {
                 pairs.forEach((pair, index) => {
                     setTimeout(() => {
                         const utterEN = new SpeechSynthesisUtterance(pair[0]);
                         utterEN.lang = 'en-US';
-                        utterEN.rate = 0.8;
+                        utterEN.rate = 0.9;
                         window.speechSynthesis.speak(utterEN);
 
                         const utterFR = new SpeechSynthesisUtterance("veut dire " + pair[1]);
                         utterFR.lang = 'fr-FR';
+                        utterFR.rate = 1.25;
                         window.speechSynthesis.speak(utterFR);
-                    }, index * 300); 
+                    }, index * 320); 
                 });
             };
             window.speechSynthesis.speak(utterIntro);
@@ -121,30 +123,4 @@ clarisse_html = """
             document.getElementById('step-level').classList.add('hidden');
             document.getElementById('course-screen').classList.remove('hidden');
             speakStep("C'est noté. Commençons le niveau " + level + ".", []);
-            showStep();
-        }
-
-        function showStep() {
-            const grammarZone = document.getElementById('grammar-zone');
-            if (currentStep < fullProgram.length) {
-                const data = fullProgram[currentStep];
-                grammarZone.innerText = data.rule.replace(/\\\\n/g, '\\n');
-                speakStep(data.text, data.pairs);
-            } else {
-                const fin = "Félicitations " + userName + " ! C'est bien.";
-                grammarZone.innerText = "✅ Session terminée !";
-                document.getElementById('next-btn').style.display = 'none';
-                speakStep(fin, []);
-            }
-        }
-
-        document.getElementById('next-btn').onclick = () => {
-            currentStep++;
-            showStep();
-        };
-    </script>
-</body>
-</html>
-"""
-
-components.html(clarisse_html, height=800)
+            show
