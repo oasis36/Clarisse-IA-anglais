@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Clarisse - English Learning", layout="centered")
 
-st.write("### 🎓 Apprentissage Interactif : Anglais avec Traduction")
+st.write("### 🎓 Apprentissage Bilingue avec Clarisse")
 
 clarisse_html = """
 <!DOCTYPE html>
@@ -23,7 +23,7 @@ clarisse_html = """
     <div class="main-container">
         <div id="clarisse-bubble" class="speech-bubble">
             <span class="clarisse-label">Clarisse :</span>
-            <span id="text-output">Cliquez sur le bouton pour commencer.</span>
+            <span id="text-output">Prêt pour ton cours ?</span>
         </div>
 
         <div id="welcome-screen" style="margin-top:20px;">
@@ -42,7 +42,7 @@ clarisse_html = """
 
         <div id="course-screen" class="hidden" style="margin-top:20px;">
             <div id="grammar-zone" class="grammar-box"></div>
-            <button id="next-btn" class="btn-start btn-next">Suivant</button>
+            <button id="next-btn" class="btn-start btn-next">Continuer</button>
         </div>
     </div>
 
@@ -53,37 +53,47 @@ clarisse_html = """
         
         const fullProgram = [
             { 
-                text: "Étape 1 : Les pronoms personnels. Écoute bien la traduction :", 
-                rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle \\n It = Chose \\n We = Nous \\n They = Ils",
-                speech: "I, je. You, tu. He, il. She, elle. It, pour une chose. We, nous. They, ils."
+                text: "Étape 1 : Les pronoms personnels. Je te donne le mot anglais et sa traduction :", 
+                rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle \\n We = Nous \\n They = Ils",
+                // Format : [Anglais, Français]
+                pairs: [["I", "Je"], ["You", "Tu"], ["He", "Il"], ["She", "Elle"], ["We", "Nous"], ["They", "Ils"]]
             },
             { 
-                text: "Étape 2 : Le verbe Être et le verbe Avoir. Répète après moi :", 
+                text: "Étape 2 : Les verbes Être et Avoir. Écoute bien la différence :", 
                 rule: "I am = Je suis \\n I have = J'ai \\n You are = Tu es \\n You have = Tu as",
-                speech: "I am, je suis. I have, j'ai. You are, tu es. You have, tu as."
+                pairs: [["I am", "Je suis"], ["I have", "J'ai"], ["You are", "Tu es"], ["You have", "Tu as"]]
             },
             { 
-                text: "Étape 3 : Faisons des phrases simples.", 
+                text: "Étape 3 : Quelques phrases simples pour finir.", 
                 rule: "I am happy = Je suis heureux \\n I have a car = J'ai une voiture",
-                speech: "I am happy, je suis heureux. I have a car, j'ai une voiture."
+                pairs: [["I am happy", "Je suis heureux"], ["I have a car", "J'ai une voiture"]]
             }
         ];
 
-        function speakClarisse(frIntro, lessonSpeech) {
+        function speakStep(frIntro, pairs) {
             window.speechSynthesis.cancel();
             textOutput.innerText = frIntro;
 
             const utterIntro = new SpeechSynthesisUtterance(frIntro);
             utterIntro.lang = 'fr-FR';
-            utterIntro.rate = 1.1;
-
+            
             utterIntro.onend = function() {
-                if(lessonSpeech !== "") {
-                    const utterLesson = new SpeechSynthesisUtterance(lessonSpeech);
-                    utterLesson.lang = 'fr-FR'; // On reste en FR pour qu'elle lise bien la traduction "I égale je"
-                    utterLesson.rate = 0.9;
-                    window.speechSynthesis.speak(utterLesson);
-                }
+                // Pour chaque paire [Anglais, Français]
+                pairs.forEach((pair, index) => {
+                    setTimeout(() => {
+                        // 1. Dire l'Anglais avec l'accent US
+                        const utterEN = new SpeechSynthesisUtterance(pair[0]);
+                        utterEN.lang = 'en-US';
+                        utterEN.rate = 0.8;
+                        window.speechSynthesis.speak(utterEN);
+
+                        // 2. Dire "veut dire" + le Français avec l'accent FR
+                        const utterFR = new SpeechSynthesisUtterance("veut dire " + pair[1]);
+                        utterFR.lang = 'fr-FR';
+                        utterFR.rate = 1.0;
+                        window.speechSynthesis.speak(utterFR);
+                    }, index * 100); 
+                });
             };
             window.speechSynthesis.speak(utterIntro);
         }
@@ -91,8 +101,8 @@ clarisse_html = """
         document.getElementById('launch-btn').onclick = function() {
             document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('step-name').classList.remove('hidden');
-            const intro = "Bonjour ! Je me présente, je m'appelle Clarisse. Comment t'appelles-tu ?";
-            speakClarisse(intro, "");
+            const intro = "Bonjour ! Je suis Clarisse. Comment t'appelles-tu ?";
+            speakStep(intro, []);
         };
 
         document.getElementById('submit-name').onclick = function() {
@@ -100,8 +110,8 @@ clarisse_html = """
             if(userName.trim() !== "") {
                 document.getElementById('step-name').classList.add('hidden');
                 document.getElementById('step-level').classList.remove('hidden');
-                const welcome = "Enchantée " + userName + ". Prêt pour la leçon ?";
-                speakClarisse(welcome, "");
+                const welcome = "Enchantée " + userName + ". Voici ton programme.";
+                speakStep(welcome, []);
             }
         };
 
@@ -116,12 +126,12 @@ clarisse_html = """
             if (currentStep < fullProgram.length) {
                 const data = fullProgram[currentStep];
                 grammarZone.innerText = data.rule.replace(/\\\\n/g, '\\n');
-                speakClarisse(data.text, data.speech);
+                speakStep(data.text, data.pairs);
             } else {
-                const fin = "C'est bien " + userName + " ! Tu as terminé les trois étapes.";
-                grammarZone.innerText = "✅ Leçon terminée !";
+                const fin = "C'est bien " + userName + " ! Tu as terminé le module.";
+                grammarZone.innerText = "✅ Félicitations !";
                 document.getElementById('next-btn').style.display = 'none';
-                speakClarisse(fin, "");
+                speakStep(fin, []);
             }
         }
 
@@ -132,6 +142,3 @@ clarisse_html = """
     </script>
 </body>
 </html>
-"""
-
-components.html(clarisse_html, height=750)
