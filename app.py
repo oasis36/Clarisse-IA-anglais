@@ -2,7 +2,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Clarisse - English Learning", layout="centered")
-
 st.write("### 🎓 Programme d'Apprentissage avec Clarisse")
 
 clarisse_html = """
@@ -11,74 +10,101 @@ clarisse_html = """
 <head>
     <meta charset="UTF-8">
     <style>
-        .main-container { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background-color: #f4f7f6; border-radius: 15px; border: 1px solid #ddd; max-width: 650px; margin: auto; }
-        .btn-start { padding: 12px 25px; font-size: 15px; cursor: pointer; border-radius: 10px; background-color: #4CAF50; color: white; border: none; font-weight: bold; margin: 10px; display: inline-block; width: 85%; line-height: 1.2; }
-        .btn-start small { font-weight: normal; font-size: 0.85rem; display: block; margin-top: 4px; opacity: 0.9; }
-        
-        .speech-bubble { margin-top: 15px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: left; border-left: 6px solid #4CAF50; }
-        
-        .content-wrapper { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .text-area { flex-grow: 1; font-size: 1.1rem; color: #1a1a1a; line-height: 1.4; padding: 0 5px; }
-        
-        .controls-left { display: flex; flex-direction: column; gap: 5px; }
-        
-        .btn-control { padding: 6px 10px; font-size: 0.65rem; border-radius: 8px; cursor: pointer; border: none; font-weight: bold; white-space: nowrap; transition: 0.2s; min-width: 90px; }
-        .btn-pause { background-color: #ffc107; color: black; min-width: 80px; }
-        .btn-back { background-color: #6c757d; color: white; }
-        .btn-menu { background-color: #17a2b8; color: white; }
-        
+        .main-container { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 15px; background: #f4f7f6; border-radius: 15px; border: 1px solid #ddd; max-width: 600px; margin: auto; }
+        .btn-start { padding: 10px 20px; font-size: 15px; cursor: pointer; border-radius: 10px; background: #4CAF50; color: white; border: none; font-weight: bold; margin: 8px; width: 85%; }
+        .btn-start small { font-weight: normal; font-size: 0.8rem; display: block; opacity: 0.9; }
+        .speech-bubble { margin-top: 10px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 3px 5px rgba(0,0,0,0.1); text-align: left; border-left: 5px solid #4CAF50; }
+        .content-wrapper { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .text-area { flex-grow: 1; font-size: 1rem; color: #1a1a1a; line-height: 1.3; }
+        .controls-left { display: flex; flex-direction: column; gap: 4px; }
+        .btn-control { padding: 5px 8px; font-size: 0.6rem; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; min-width: 85px; transition: 0.2s; }
+        .btn-pause { background: #ffc107; color: black; }
+        .btn-back { background: #6c757d; color: white; }
+        .btn-menu { background: #17a2b8; color: white; }
         .hidden { display: none; }
-        .grammar-box { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; font-family: 'Segoe UI', sans-serif; font-weight: bold; color: #e65100; font-size: 1.2rem; white-space: pre-wrap; text-align: center; border: 1px dashed #e65100; }
-        .clarisse-label { font-weight: bold; color: #4CAF50; text-transform: uppercase; font-size: 0.8rem; display: block; margin-bottom: 8px; }
-        
-        .input-area { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-        .input-box { padding: 12px; width: 70%; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+        .grammar-box { background: #fff3e0; padding: 12px; border-radius: 10px; margin: 12px 0; font-weight: bold; color: #e65100; font-size: 1.1rem; border: 1px dashed #e65100; white-space: pre-wrap; }
+        .input-area { margin-top: 15px; display: flex; gap: 8px; justify-content: center; }
+        .input-box { padding: 10px; width: 65%; border-radius: 8px; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
     <div class="main-container">
         <div id="clarisse-bubble" class="speech-bubble">
-            <span class="clarisse-label">Clarisse</span>
+            <span style="font-weight:bold; color:#4CAF50; font-size:0.8rem;">CLARISSE</span>
             <div class="content-wrapper">
                 <div class="controls-left">
                     <button id="back-btn" class="btn-control btn-back hidden">⬅ RETOUR</button>
                     <button id="menu-btn" class="btn-control btn-menu hidden">☰ MENU</button>
                 </div>
-                <div id="text-output" class="text-area">Cliquez pour lancer la présentation.</div>
+                <div id="text-output" class="text-area">Cliquez pour lancer.</div>
                 <button id="pause-btn" class="btn-control btn-pause hidden">⏸ PAUSE</button>
             </div>
         </div>
-
-        <div id="chat-zone" class="hidden">
-            <div class="input-area">
-                <input type="text" id="user-input" class="input-box" placeholder="Lui dire quelque chose...">
-                <button id="send-btn" class="btn-start" style="width:auto; margin:0;">Envoyer</button>
-            </div>
-        </div>
-
-        <div id="welcome-screen" style="margin-top:20px;">
-            <button id="launch-btn" class="btn-start" style="width:auto;">Lancer la conversation</button>
-        </div>
-
-        <div id="step-name" class="hidden" style="margin-top:20px;">
-            <input type="text" id="user-name-input" class="input-box" placeholder="Ton prénom...">
-            <br><br>
+        <div id="chat-zone" class="hidden"><div class="input-area">
+            <input type="text" id="user-input" class="input-box" placeholder="Lui dire quelque chose...">
+            <button id="send-btn" class="btn-start" style="width:auto; margin:0;">Envoyer</button>
+        </div></div>
+        <div id="welcome-screen" style="margin-top:15px;"><button id="launch-btn" class="btn-start" style="width:auto;">Lancer la conversation</button></div>
+        <div id="step-name" class="hidden" style="margin-top:15px;">
+            <input type="text" id="user-name-input" class="input-box" placeholder="Ton prénom..."><br><br>
             <button id="submit-name" class="btn-start" style="width:auto;">Valider mon prénom</button>
         </div>
-
-        <div id="step-level" class="hidden" style="margin-top:20px;">
-            <button class="btn-start" onclick="initLesson('Débutant')">
-                <b>Débutant</b>
-                <small>(Accent sur la grammaire et les bases fondamentales)</small>
-            </button>
-            <button class="btn-start" style="background-color: #FF9800;" onclick="initLesson('Intermédiaire')">
-                <b>Intermédiaire</b>
-                <small>(Fluidité et expressions courantes)</small>
-            </button>
-            <button class="btn-start" style="background-color: #9C2774;" onclick="initLesson('Avancé')">
-                <b>Avancé</b>
-                <small>(Perfectionnement et nuances)</small>
-            </button>
+        <div id="step-level" class="hidden" style="margin-top:15px;">
+            <button class="btn-start" onclick="initLesson('Débutant')"><b>Débutant</b><small>(Grammaire et bases)</small></button>
+            <button class="btn-start" style="background:#FF9800;" onclick="initLesson('Intermédiaire')"><b>Intermédiaire</b><small>(Fluidité)</small></button>
+            <button class="btn-start" style="background:#9C2774;" onclick="initLesson('Avancé')"><b>Avancé</b><small>(Nuances)</small></button>
         </div>
+        <div id="course-screen" class="hidden" style="margin-top:15px;">
+            <div id="grammar-zone" class="grammar-box"></div>
+            <button id="next-btn" class="btn-start" style="background:#2196F3; width:auto;">Continuer la leçon</button>
+        </div>
+    </div>
+    <script>
+        let history = [], userName = "", isPaused = false, currentStep = 0;
+        const textOut = document.getElementById('text-output'), pauseBtn = document.getElementById('pause-btn'), backBtn = document.getElementById('back-btn'), menuBtn = document.getElementById('menu-btn');
+        const prog = [{ text: "Étape 1 : Les pronoms. Écoutez bien :", rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle", pairs: [["I", "Je"], ["You", "Tu"], ["He", "Il"], ["She", "Elle"]] }];
 
-        <div id="course-screen" class="hidden" style="margin-top:20
+        function speak(m, cb, skipH = false) {
+            window.speechSynthesis.cancel();
+            if(!skipH) { history.push(textOut.innerText); if(history.length > 1) backBtn.classList.remove('hidden'); }
+            textOut.innerText = m;
+            let u = new SpeechSynthesisUtterance(m); u.lang = 'fr-FR'; u.rate = 1.25;
+            if(cb) u.onend = cb; window.speechSynthesis.speak(u);
+            pauseBtn.classList.remove('hidden'); pauseBtn.innerText = "⏸ PAUSE"; isPaused = false;
+        }
+
+        function speakStep(intro, pairs) {
+            window.speechSynthesis.cancel();
+            textOut.innerText = intro;
+            let uI = new SpeechSynthesisUtterance(intro); uI.lang = 'fr-FR'; uI.rate = 1.25;
+            uI.onend = () => {
+                pairs.forEach((p, i) => {
+                    setTimeout(() => { if(!isPaused) {
+                        let uE = new SpeechSynthesisUtterance(p[0]); uE.lang = 'en-US'; uE.rate = 0.9; window.speechSynthesis.speak(uE);
+                        let uF = new SpeechSynthesisUtterance(p[1]); uF.lang = 'fr-FR'; uF.rate = 1.2; window.speechSynthesis.speak(uF);
+                    }}, i * 1500);
+                });
+            };
+            window.speechSynthesis.speak(uI); pauseBtn.classList.remove('hidden');
+        }
+
+        menuBtn.onclick = () => { window.speechSynthesis.cancel(); document.getElementById('course-screen').classList.add('hidden'); document.getElementById('step-level').classList.remove('hidden'); menuBtn.classList.add('hidden'); backBtn.classList.add('hidden'); history = []; speak("Choisissons un autre niveau.", null, true); };
+        pauseBtn.onclick = () => { if(!isPaused) { window.speechSynthesis.pause(); pauseBtn.innerText = "▶ REPRENDRE"; isPaused = true; } else { window.speechSynthesis.resume(); pauseBtn.innerText = "⏸ PAUSE"; isPaused = false; }};
+        document.getElementById('launch-btn').onclick = () => {
+            document.getElementById('welcome-screen').style.display = 'none'; document.getElementById('step-name').classList.remove('hidden');
+            speak("Bonjour Bibliothèque. Je suis Clarisse. Je suis ton IA dédiée à l'anglais. Je me passionne pour la structure des langues et le partage d'idées. Quel est ton prénom ?", null, true);
+        };
+        document.getElementById('submit-name').onclick = () => {
+            userName = document.getElementById('user-name-input').value;
+            if(userName) { document.getElementById('step-name').classList.add('hidden'); document.getElementById('chat-zone').classList.remove('hidden');
+                speak("Enchantée " + userName + ". Quel est ton niveau ?", () => { document.getElementById('step-level').classList.remove('hidden'); }, true);
+            }
+        };
+        function initLesson(l) { document.getElementById('step-level').classList.add('hidden'); document.getElementById('course-screen').classList.remove('hidden'); menuBtn.classList.remove('hidden'); speak("Niveau " + l + " activé.", () => { showStep(); }, true); }
+        function showStep() { const d = prog[currentStep]; document.getElementById('grammar-zone').innerText = d.rule.replace(/\\\\n/g, '\\n'); speakStep(d.text, d.pairs); }
+        document.getElementById('send-btn').onclick = () => { let v = document.getElementById('user-input').value; if(v) { speak("Tu as dit : '" + v + "'. On continue ?", null, true); document.getElementById('user-input').value = ""; }};
+    </script>
+</body>
+</html>
+"""
+components.html(clarisse_html, height=750)
