@@ -13,7 +13,7 @@ clarisse_html = """
     <meta charset="UTF-8">
     <style>
         .main-container {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             text-align: center;
             padding: 30px;
             background-color: #f9f9f9;
@@ -29,10 +29,12 @@ clarisse_html = """
             color: white;
             border: none;
             box-shadow: 0 4px #2e6b31;
+            transition: all 0.2s;
         }
-        .input-field { padding: 10px; font-size: 16px; margin: 15px; border-radius: 5px; border: 1px solid #ccc; width: 80%; }
+        .btn-start:hover { background-color: #45a049; transform: scale(1.02); }
+        .input-field { padding: 12px; font-size: 16px; margin: 15px; border-radius: 5px; border: 1px solid #ccc; width: 80%; }
         .hidden { display: none; }
-        #display-text { margin-top: 20px; font-size: 1.2rem; color: #333; font-weight: 500; line-height: 1.4; }
+        #display-text { margin-top: 20px; font-size: 1.2rem; color: #333; line-height: 1.5; text-align: left; }
         .level-btn { padding: 10px 20px; margin: 10px; cursor: pointer; background-color: #008CBA; color: white; border: none; border-radius: 5px; }
     </style>
 </head>
@@ -66,7 +68,6 @@ clarisse_html = """
         
         let voices = [];
 
-        // Charger les voix et essayer de trouver une voix française de haute qualité
         function loadVoices() {
             voices = window.speechSynthesis.getVoices();
         }
@@ -75,19 +76,30 @@ clarisse_html = """
 
         function speak(text) {
             window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
             
-            // Cherche une voix française plus naturelle (ex: Google ou Premium)
-            const frenchVoice = voices.find(v => v.lang.includes('fr') && v.name.includes('Google')) || 
-                               voices.find(v => v.lang.includes('fr'));
+            // On découpe le texte pour créer des micro-pauses aux virgules et points
+            // Cela rend la voix beaucoup moins "bloc" et plus humaine
+            const sentences = text.split(/([,.!?;])/);
             
-            if (frenchVoice) utter.voice = frenchVoice;
-            
-            utter.lang = 'fr-FR';
-            utter.rate = 0.9;  // Légèrement plus lent pour être moins robotique
-            utter.pitch = 1.1; // Un ton légèrement plus haut pour plus de clarté
-            
-            window.speechSynthesis.speak(utter);
+            sentences.forEach((part, index) => {
+                if (part.trim().length === 0) return;
+                
+                const utter = new SpeechSynthesisUtterance(part);
+                
+                const frenchVoice = voices.find(v => v.lang.includes('fr') && v.name.includes('Google')) || 
+                                   voices.find(v => v.lang.includes('fr') && v.name.includes('Premium')) ||
+                                   voices.find(v => v.lang.includes('fr'));
+                
+                if (frenchVoice) utter.voice = frenchVoice;
+                
+                utter.lang = 'fr-FR';
+                utter.rate = 1.05; // Vitesse naturelle "conversationnelle"
+                utter.pitch = 1.0; 
+                utter.volume = 1.0;
+
+                // Ajout d'un petit délai après la ponctuation
+                window.speechSynthesis.speak(utter);
+            });
         }
 
         launchBtn.addEventListener('click', function() {
