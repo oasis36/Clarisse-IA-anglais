@@ -1,2 +1,2 @@
-# Clarisse-IA-anglait-
+# Clarisse-IA-anglais-
 interface pour Clarisse
