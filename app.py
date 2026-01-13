@@ -1,3 +1,5 @@
+import streamlit as st
+
 # --- CONFIGURATION DU CERVEAU DE CLARISSE ---
 # Ce bloc reste caché sur ton serveur privé
 CLARISSE_RULES = """
