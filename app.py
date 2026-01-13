@@ -1,7 +1,9 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Clarisse - English School", layout="centered")
+st.set_page_config(page_title="Clarisse - English Learning", layout="centered")
+
+st.write("### 🎓 Ton Programme d'Apprentissage avec Clarisse")
 
 clarisse_html = """
 <!DOCTYPE html>
@@ -14,13 +16,13 @@ clarisse_html = """
         .btn-next { background-color: #2196F3; }
         .hidden { display: none; }
         #display-text { margin-top: 20px; font-size: 1.1rem; color: #333; line-height: 1.5; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-height: 100px; text-align: left; border-left: 5px solid #4CAF50; }
-        .grammar-box { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; font-family: 'Courier New', Courier, monospace; font-weight: bold; color: #e65100; font-size: 1.2rem; white-space: pre-wrap; }
-        .step-indicator { color: #888; font-size: 0.9rem; margin-bottom: 5px; font-weight: bold; }
+        .grammar-box { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; font-family: 'Courier New', Courier, monospace; font-weight: bold; color: #e65100; font-size: 1.2rem; white-space: pre-wrap; text-align: center; }
+        .step-indicator { color: #2196F3; font-size: 0.9rem; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <div id="intro-screen">
+        <div id="welcome-screen">
             <button id="launch-btn" class="btn-start">Lancer la conversation</button>
         </div>
 
@@ -31,75 +33,80 @@ clarisse_html = """
         </div>
 
         <div id="step-level" class="hidden">
-            <p>Bonjour ! Quel est ton niveau actuel ?</p>
-            <button class="btn-start" onclick="startLesson('Débutant')">Débutant (Bases & Phrases)</button>
-            <button class="btn-start" onclick="startLesson('Intermédiaire')">Intermédiaire</button>
-            <button class="btn-start" onclick="startLesson('Avancé')">Avancé</button>
+            <p>Bonjour ! Je suis Clarisse. Pour commencer notre programme, quel est ton niveau actuel ?</p>
+            <button class="btn-start" onclick="initLesson()">Débutant (Programme Complet)</button>
         </div>
 
         <div id="course-screen" class="hidden">
-            <div class="step-indicator" id="progression">Module : Les Piliers de l'Anglais</div>
+            <div id="module-title" class="step-indicator"></div>
             <div id="display-text"></div>
             <div id="grammar-zone" class="grammar-box"></div>
-            <button id="next-btn" class="btn-start btn-next">Étape Suivante</button>
+            <button id="next-btn" class="btn-start btn-next">Passer à la suite</button>
         </div>
     </div>
 
     <script>
         let currentStep = 0;
         let userName = "";
-        const displayText = document.getElementById('display-text');
-        const grammarZone = document.getElementById('grammar-zone');
+        
+        // --- LE PROGRAMME EN 3 ÉTAPES ---
+        const fullProgram = [
+            // ÉTAPE 1 : GRAMMAIRE DE BASE
+            { 
+                module: "Étape 1 : Grammaire Fondamentale",
+                text: "Commençons par les bases. Les pronoms personnels sont essentiels pour désigner qui parle ou de qui on parle.", 
+                rule: "I (Je), You (Tu), He (Il), She (Elle)\\nIt (Chose), We (Nous), They (Ils)" 
+            },
+            // ÉTAPE 2 : VERBES ÊTRE ET AVOIR
+            { 
+                module: "Étape 2 : Verbes Être et Avoir",
+                text: "Maintenant, le verbe ÊTRE (To Be) pour l'identité et le verbe AVOIR (To Have) pour la possession.", 
+                rule: "I am (Je suis) / I have (J'ai)\\nYou are (Tu es) / You have (Tu as)\\nHe/She is (Il/Elle est) / He/She HAS (Il/Elle a)" 
+            },
+            // ÉTAPE 3 : CONSTRUCTION DE PHRASES SIMPLES
+            { 
+                module: "Étape 3 : Construction de phrases",
+                text: "Utilisons ce que nous avons appris pour créer tes premières phrases simples.", 
+                rule: "I am happy. (Je suis heureux)\\nI have a car. (J'ai une voiture)\\nShe is a friend. (Elle est une amie)" 
+            },
+            { 
+                module: "Étape 3 : Construction de phrases",
+                text: "Voici comment exprimer un besoin ou une origine.", 
+                rule: "I am hungry. (J'ai faim)\\nI have a question. (J'ai une question)\\nI am from France. (Je viens de France)" 
+            }
+        ];
 
         function speak(text) {
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'fr-FR';
-            utter.rate = 1.25;
+            utter.rate = 1.3;
             window.speechSynthesis.speak(utter);
         }
 
-        // --- PROGRAMME : ÊTRE, AVOIR ET DÉBUTS DE PHRASES ---
-        const lessonPlan = [
-            { 
-                text: "Étape 1 : Le verbe ÊTRE (To Be). Il sert à décrire un état ou une identité. Répète après moi : I am, You are.", 
-                rule: "I am (Je suis)\\nYou are (Tu es)\\nHe/She/It is (Il/Elle est)\\nWe are (Nous sommes)\\nThey are (Ils sont)" 
-            },
-            { 
-                text: "Étape 2 : Le verbe AVOIR (To Have). Indispensable pour la possession. Attention à la 3ème personne : He HAS.", 
-                rule: "I have (J'ai)\\nYou have (Tu as)\\nHe/She/It HAS (Il/Elle a)\\nWe have (Nous avons)\\nThey have (Ils ont)" 
-            },
-            { 
-                text: "C'est bien ! Maintenant, passons aux débuts de phrases utiles. Pour se présenter ou dire ce qu'on aime.", 
-                rule: "I am from... (Je viens de...)\\nI have a... (J'ai un/une...)\\nI like to... (J'aime...)" 
-            },
-            { 
-                text: "Pratiquons ! Voici comment poser une question simple avec le verbe avoir.", 
-                rule: "Do you have? (Est-ce que tu as ?)\\nEx: Do you have a dog? (As-tu un chien ?)" 
-            },
-            { 
-                text: "Et voici comment utiliser le verbe être pour décrire une émotion.", 
-                rule: "I am happy (Je suis heureux)\\nI am tired (Je suis fatigué)\\nI am hungry (J'ai faim - littéralement: Je suis affamé)" 
-            }
-        ];
-
-        function startLesson(level) {
+        function initLesson() {
             document.getElementById('step-level').classList.add('hidden');
             document.getElementById('course-screen').classList.remove('hidden');
+            currentStep = 0;
             showStep();
         }
 
         function showStep() {
-            if (currentStep < lessonPlan.length) {
-                const data = lessonPlan[currentStep];
+            const displayText = document.getElementById('display-text');
+            const grammarZone = document.getElementById('grammar-zone');
+            const moduleTitle = document.getElementById('module-title');
+
+            if (currentStep < fullProgram.length) {
+                const data = fullProgram[currentStep];
+                moduleTitle.innerText = data.module;
                 displayText.innerText = data.text;
                 grammarZone.innerText = data.rule.replace(/\\\\n/g, '\\n');
-                document.getElementById('progression').innerText = "Module Débutant - Étape " + (currentStep + 1) + " / " + lessonPlan.length;
                 speak(data.text);
             } else {
-                const fin = "C'est bien " + userName + " ! Tu maîtrises maintenant les bases des verbes Être et Avoir, et tu sais former tes premières phrases. Félicitations !";
+                const fin = "Félicitations " + userName + " ! C'est bien. Tu as validé les 3 étapes de base : Grammaire, Verbes et Phrases simples !";
+                moduleTitle.innerText = "PROGRAMME TERMINÉ";
                 displayText.innerText = fin;
-                grammarZone.innerText = "Niveau Fondamental Validé ! ✅\\n\\nProchaine leçon : Le Présent Continu !";
+                grammarZone.innerText = "✅ Félicitations ! Tu es prêt pour le niveau suivant.";
                 document.getElementById('next-btn').style.display = 'none';
                 speak(fin);
             }
@@ -111,9 +118,9 @@ clarisse_html = """
         };
 
         document.getElementById('launch-btn').onclick = function() {
-            this.parentElement.classList.add('hidden');
+            document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('step-name').classList.remove('hidden');
-            const intro = "Bonjour ! Je me présente, je m'appelle Clarisse, ton IA dédiée à l'apprentissage de l'anglais. Et toi, comment t'appelles-tu ?";
+            const intro = "Bonjour ! Je me présente, je m'appelle Clarisse. Ton IA dédiée à l'apprentissage de l'anglais. Et toi, comment t'appelles-tu ?";
             speak(intro);
         };
 
@@ -122,7 +129,7 @@ clarisse_html = """
             if(userName.trim() !== "") {
                 document.getElementById('step-name').classList.add('hidden');
                 document.getElementById('step-level').classList.remove('hidden');
-                const welcome = "C'est un plaisir de faire ta connaissance, " + userName + " ! Quel est ton niveau actuel ?";
+                const welcome = "Enchantée " + userName + ". Nous allons suivre un programme en 3 étapes. Es-tu prêt ?";
                 speak(welcome);
             }
         };
