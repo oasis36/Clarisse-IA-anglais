@@ -1,8 +1,3 @@
-import streamlit as st
-from gtts import gTTS
-from streamlit_mic_recorder import mic_recorder
-import io
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
