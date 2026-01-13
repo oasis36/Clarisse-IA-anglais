@@ -18,7 +18,7 @@ st.title("🎓 Apprendre l'anglais avec Clarisse")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Bonjour Bibliothèque. Je suis *Clarisse*. Quel est ton niveau actuel ? (Débutant, Intermédiaire, Avancé)"}
+        {"role": "assistant", "content": "Bonjour. Je suis *Clarisse*. Quel est ton niveau actuel ? (Débutant, Intermédiaire, Avancé)"}
     ]
 
 for message in st.session_state.messages:
