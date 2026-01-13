@@ -26,7 +26,6 @@ clarisse_html = """
         .btn-pause { background-color: #ffc107; color: black; min-width: 80px; }
         .btn-back { background-color: #6c757d; color: white; }
         .btn-menu { background-color: #17a2b8; color: white; }
-        .btn-control:hover { opacity: 0.8; }
         
         .hidden { display: none; }
         .grammar-box { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; font-family: 'Segoe UI', sans-serif; font-weight: bold; color: #e65100; font-size: 1.2rem; white-space: pre-wrap; text-align: center; border: 1px dashed #e65100; }
@@ -92,10 +91,20 @@ clarisse_html = """
         let history = []; 
         let userName = "";
         let isPaused = false;
+        let currentStep = 0;
+        
         const textOutput = document.getElementById('text-output');
         const pauseBtn = document.getElementById('pause-btn');
         const backBtn = document.getElementById('back-btn');
         const menuBtn = document.getElementById('menu-btn');
+
+        const fullProgram = [
+            { 
+                text: "Étape 1 : Les pronoms personnels. Écoute bien la prononciation :", 
+                rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle \\n We = Nous \\n They = Ils",
+                pairs: [["I", "Je"], ["You", "Tu"], ["He", "Il"], ["She", "Elle"], ["We", "Nous"], ["They", "Ils"]]
+            }
+        ];
 
         function speakText(msg, onEndCallback, skipHistory = false) {
             window.speechSynthesis.cancel();
@@ -103,90 +112,37 @@ clarisse_html = """
                 history.push(textOutput.innerText);
                 if (history.length > 1) backBtn.classList.remove('hidden');
             }
-            
             textOutput.innerText = msg;
             const utter = new SpeechSynthesisUtterance(msg);
             utter.lang = 'fr-FR';
             utter.rate = 1.25; 
             if (onEndCallback) utter.onend = onEndCallback;
             window.speechSynthesis.speak(utter);
-            
             pauseBtn.classList.remove('hidden');
             pauseBtn.innerText = "⏸ PAUSE";
             isPaused = false;
         }
 
-        menuBtn.onclick = function() {
+        function speakStep(frIntro, pairs) {
             window.speechSynthesis.cancel();
-            document.getElementById('course-screen').classList.add('hidden');
-            document.getElementById('step-level').classList.remove('hidden');
-            menuBtn.classList.add('hidden');
-            backBtn.classList.add('hidden');
-            history = [];
-            speakText("D'accord, revenons au choix du programme. Quel niveau préfères-tu ?", null, true);
-        };
+            textOutput.innerText = frIntro;
+            const utterIntro = new SpeechSynthesisUtterance(frIntro);
+            utterIntro.lang = 'fr-FR';
+            utterIntro.rate = 1.25; 
+            
+            utterIntro.onend = function() {
+                pairs.forEach((pair, index) => {
+                    setTimeout(() => {
+                        const utterEN = new SpeechSynthesisUtterance(pair[0]);
+                        utterEN.lang = 'en-US';
+                        utterEN.rate = 0.9;
+                        window.speechSynthesis.speak(utterEN);
 
-        backBtn.onclick = function() {
-            if (history.length > 0) {
-                const previousText = history.pop();
-                speakText(previousText, null, true);
-                if (history.length <= 1) backBtn.classList.add('hidden');
-            }
-        };
-
-        pauseBtn.onclick = function() {
-            if (!isPaused) {
-                window.speechSynthesis.pause();
-                pauseBtn.innerText = "▶ REPRENDRE";
-                isPaused = true;
-            } else {
-                window.speechSynthesis.resume();
-                pauseBtn.innerText = "⏸ PAUSE";
-                isPaused = false;
-            }
-        };
-
-        document.getElementById('send-btn').onclick = function() {
-            const val = document.getElementById('user-input').value;
-            if(val.trim() !== "") {
-                speakText("D'accord " + userName + ", je t'écoute. Tu me dis : '" + val + "'. On en discute ou tu préfères continuer ?", null, true);
-                document.getElementById('user-input').value = "";
-            }
-        };
-
-        document.getElementById('launch-btn').onclick = function() {
-            document.getElementById('welcome-screen').style.display = 'none';
-            document.getElementById('step-name').classList.remove('hidden');
-            speakText("Bonjour. Je me présente, je m'appelle Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage de l'anglais, mais nous pouvons parler de tout ensemble. Pour commencer, comment t'appelles-tu ?", null, true);
-        };
-
-        document.getElementById('submit-name').onclick = function() {
-            userName = document.getElementById('user-name-input').value;
-            if(userName.trim() !== "") {
-                document.getElementById('step-name').classList.add('hidden');
-                document.getElementById('chat-zone').classList.remove('hidden');
-                const phrase = "Enchantée " + userName + ". Y a-t-il un sujet qui te tient à cœur ? À tout moment, tu peux m'interrompre, revenir en arrière ou changer de niveau. Quel est ton niveau actuel ?";
-                speakText(phrase, function() {
-                    document.getElementById('step-level').classList.remove('hidden');
-                }, true);
-            }
-        };
-
-        function initLesson(level) {
-            document.getElementById('step-level').classList.add('hidden');
-            document.getElementById('course-screen').classList.remove('hidden');
-            menuBtn.classList.remove('hidden');
-            speakText("C'est noté. Commençons le niveau " + level + ".", function() { showStep(); }, true);
-        }
-
-        function showStep() {
-            const grammarZone = document.getElementById('grammar-zone');
-            grammarZone.innerText = "I = Je \\n You = Tu \\n He = Il \\n She = Elle";
-            speakText("Voici les premiers pronoms personnels. Écoute bien la prononciation.");
-        }
-    </script>
-</body>
-</html>
-"""
-
-components.html(clarisse_html, height=800)
+                        const utterFR = new SpeechSynthesisUtterance(pair[1]);
+                        utterFR.lang = 'fr-FR';
+                        utterFR.rate = 1.25;
+                        window.speechSynthesis.speak(utterFR);
+                    }, index * 1000); // Délai entre chaque paire
+                });
+            };
+            window.speechSynthesis.speak(utter
