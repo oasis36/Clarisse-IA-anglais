@@ -56,7 +56,7 @@ clarisse_html = """
         
         const fullProgram = [
             { 
-                text: "Étape 1 : Les pronoms personnels. Je te donne le mot anglais et sa traduction :", 
+                text: "Étape 1 : Les pronoms personnels. Écoute bien :", 
                 rule: "I = Je \\n You = Tu \\n He = Il \\n She = Elle \\n We = Nous \\n They = Ils",
                 pairs: [["I", "Je"], ["You", "Tu"], ["He", "Il"], ["She", "Elle"], ["We", "Nous"], ["They", "Ils"]]
             },
@@ -87,16 +87,18 @@ clarisse_html = """
             utterIntro.onend = function() {
                 pairs.forEach((pair, index) => {
                     setTimeout(() => {
+                        // Mot en Anglais
                         const utterEN = new SpeechSynthesisUtterance(pair[0]);
                         utterEN.lang = 'en-US';
                         utterEN.rate = 0.9;
                         window.speechSynthesis.speak(utterEN);
 
-                        const utterFR = new SpeechSynthesisUtterance("veut dire " + pair[1]);
+                        // Mot en Français (sans le "veut dire")
+                        const utterFR = new SpeechSynthesisUtterance(pair[1]);
                         utterFR.lang = 'fr-FR';
                         utterFR.rate = 1.25;
                         window.speechSynthesis.speak(utterFR);
-                    }, index * 320); 
+                    }, index * 400); // Temps ajusté pour la clarté
                 });
             };
             window.speechSynthesis.speak(utterIntro);
@@ -147,7 +149,3 @@ clarisse_html = """
     </script>
 </body>
 </html>
-"""
-
-components.html(clarisse_html, height=800)
-E
