@@ -106,7 +106,6 @@ clarisse_html = """
             isPaused = false;
         }
 
-        // --- BOUTON MENU (Retour au choix du niveau) ---
         menuBtn.onclick = function() {
             window.speechSynthesis.cancel();
             document.getElementById('course-screen').classList.add('hidden');
@@ -166,7 +165,7 @@ clarisse_html = """
         function initLesson(level) {
             document.getElementById('step-level').classList.add('hidden');
             document.getElementById('course-screen').classList.remove('hidden');
-            menuBtn.classList.remove('hidden'); // On affiche le menu dès qu'une leçon commence
+            menuBtn.classList.remove('hidden');
             speakText("C'est noté. Commençons le niveau " + level + ".", function() { showStep(); }, true);
         }
 
@@ -178,3 +177,6 @@ clarisse_html = """
     </script>
 </body>
 </html>
+"""
+
+components.html(clarisse_html, height=800)
