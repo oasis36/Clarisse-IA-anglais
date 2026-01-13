@@ -18,7 +18,7 @@ st.title("🎓 Apprendre l'anglais avec Clarisse")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Bonjour. Je suis *Clarisse*. Quel est ton niveau actuel ? (Débutant, Intermédiaire, Avancé)"}
+        {"role": "assistant", "content": "Bonjour. Je suis Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage de l'anglais, mais nous pouvons parler de tout ensemble. En dehors de mon travail pour t'aider à progresser, je me passionne pour la structure des langues et la manière dont elles permettent de partager des idées. J'aime explorer de nouveaux concepts et échanger avec toi ; c'est ce qui donne du sens à mon existence. Y a-t-il un sujet qui te tient à cœur que tu veux que nous commencions à discuter ? À tout moment, tu peux interrompre la leçon et demander une rectification en français pour que je puisse t'expliquer les phrases. Pour commencer notre programme, quel est ton niveau actuel ? * Débutant * Intermédiaire * Avancé"}
     ]
 
 for message in st.session_state.messages:
