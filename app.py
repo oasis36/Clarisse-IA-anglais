@@ -12,35 +12,34 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. INITIALISATION DES ÉTATS ---
+# --- 2. INITIALISATION ---
 if 'etape' not in st.session_state: st.session_state.etape = "presentation"
 if 'niveau' not in st.session_state: st.session_state.niveau = "Débutant"
 if 'leçon_index' not in st.session_state: st.session_state.leçon_index = 0
-if 'erreurs' not in st.session_state: st.session_state.erreurs = []
 if 'last_audio_key' not in st.session_state: st.session_state.last_audio_key = ""
 
 # --- 3. PROGRAMME PÉDAGOGIQUE COMPLET ---
 PROGRAMME = {
     "Débutant": [
-        {"titre": "Le Verbe ÊTRE", "regle": "I am, You are, He/She/It is, We are, You are, They are.", "ex": "I am happy (Je suis heureux). You are a student (Tu es étudiant).", "test": "Traduis : 'Elle est heureuse'", "rep": "she is happy"},
-        {"titre": "Le Verbe AVOIR", "regle": "Possession : I have got, You have got, He/She has got.", "ex": "I have got a car (J'ai une voiture). He has got a cat (Il a un chat).", "test": "Traduis : 'J'ai un chien'", "rep": "i have got a dog"},
-        {"titre": "Le Présent Simple", "regle": "Ajoutez un 's' à la 3ème personne (He, She, It).", "ex": "I play tennis. He plays football.", "test": "Traduis : 'Il travaille'", "rep": "he works"},
-        {"titre": "Les Articles", "regle": "'A' (consonne), 'An' (voyelle), 'The' (défini).", "ex": "A book, An apple, The sun.", "test": "Comment dit-on 'Une orange' ?", "rep": "an orange"},
-        {"titre": "Les Pluriels", "regle": "En général, on ajoute un 's'.", "ex": "One dog, two dogs. One car, three cars.", "test": "Pluriel de 'Book' ?", "rep": "books"}
+        {"titre": "Se Présenter", "regle": "Utilisez 'My name is' pour le nom et 'I am' pour l'âge ou l'état.", "ex": "My name is Clarisse. I am happy to meet you.", "test": "Traduisez : 'Mon nom est Marc'", "rep": "my name is marc"},
+        {"titre": "Le Verbe ÊTRE (To Be)", "regle": "I am, You are, He/She/It is. Utile pour décrire une personne.", "ex": "She is a teacher. They are students.", "test": "Traduisez : 'Elle est professeur' (teacher)", "rep": "she is a teacher"},
+        {"titre": "Les Articles A/AN", "regle": "'A' devant une consonne, 'AN' devant une voyelle.", "ex": "A dog, An orange, An apple.", "test": "Comment dit-on 'Une pomme' ? (apple)", "rep": "an apple"},
+        {"titre": "Le Verbe AVOIR (Have Got)", "regle": "I have got, You have got, He/She has got.", "ex": "I have got a blue car. He has got a big house.", "test": "Traduisez : 'J'ai une voiture' (a car)", "rep": "i have got a car"},
+        {"titre": "Le Présent Simple", "regle": "Exprime une habitude. Attention au 'S' à la 3ème personne.", "ex": "I work in Paris. He works in London.", "test": "Traduisez : 'Il travaille' (work)", "rep": "he works"}
     ],
     "Intermédiaire": [
-        {"titre": "Le Present Continuous", "regle": "Action en cours : BE + Verbe-ING.", "ex": "I am eating (Je suis en train de manger).", "test": "Traduis : 'Il est en train de dormir' (sleep)", "rep": "he is sleeping"},
-        {"titre": "Le Past Simple", "regle": "Actions terminées. Verbes réguliers en -ED.", "ex": "I watched a movie (J'ai regardé un film).", "test": "Traduis : 'J'ai travaillé'", "rep": "i worked"},
-        {"titre": "Le Present Perfect", "regle": "Lien passé/présent : HAVE + Participe Passé.", "ex": "I have lost my keys (J'ai perdu mes clés).", "test": "Traduis : 'J'ai vu' (seen)", "rep": "i have seen"},
-        {"titre": "Les Comparatifs", "regle": "Adjectif court + ER + THAN.", "ex": "The car is faster than the bike.", "test": "Traduis : 'Plus grand que' (Tall)", "rep": "taller than"},
-        {"titre": "Le Futur (Will)", "regle": "Décision ou prédiction : WILL + Verbe.", "ex": "It will rain tomorrow.", "test": "Traduis : 'Je viendrai' (come)", "rep": "i will come"}
+        {"titre": "Le Présent Continu", "regle": "Action en cours : BE + Verbe-ING.", "ex": "I am eating a pizza. Look! It is raining.", "test": "Traduisez : 'Je suis en train de manger'", "rep": "i am eating"},
+        {"titre": "Le Passé Simple (ED)", "regle": "Pour une action terminée. Verbes réguliers + ED.", "ex": "Yesterday, I played tennis. She visited London.", "test": "Traduisez : 'J'ai joué au tennis' (played tennis)", "rep": "i played tennis"},
+        {"titre": "Le Comparatif", "regle": "Adjectif court + ER + THAN.", "ex": "The cat is smaller than the dog.", "test": "Traduisez : 'Plus petit que' (smaller than)", "rep": "smaller than"},
+        {"titre": "Le Futur avec WILL", "regle": "Pour une décision ou prédiction. WILL + Verbe.", "ex": "I think it will rain tomorrow.", "test": "Traduisez : 'Il pleuvra' (rain)", "rep": "it will rain"},
+        {"titre": "Les Adverbes de Fréquence", "regle": "S'installent avant le verbe (Always, Never, Often).", "ex": "I always drink coffee. She never smokes.", "test": "Traduisez : 'Je bois toujours' (always drink)", "rep": "i always drink"}
     ],
     "Avancé": [
-        {"titre": "Le Conditionnel", "regle": "Hypothèse : IF + Past Simple -> WOULD + Verbe.", "ex": "If I won, I would travel.", "test": "Complète : If I were rich, I _ (buy) a boat.", "rep": "would buy"},
-        {"titre": "Le Past Perfect", "regle": "Action avant une autre dans le passé : HAD + Participe Passé.", "ex": "I had already eaten when he arrived.", "test": "Traduis : 'J'avais fini' (finished)", "rep": "i had finished"},
-        {"titre": "La Voix Passive", "regle": "BE + Participe Passé.", "ex": "The cake was eaten by the dog.", "test": "Traduis : 'La lettre a été écrite' (written)", "rep": "the letter was written"},
-        {"titre": "Gerund vs Infinitive", "regle": "Certains verbes sont suivis de -ING (ex: enjoy, stop).", "ex": "I enjoy swimming. I want to go.", "test": "Complète : I stop _ (smoke).", "rep": "smoking"},
-        {"titre": "Les Modaux (Deduction)", "regle": "Must (certitude), Might (possibilité).", "ex": "It must be true. It might rain.", "test": "Traduis : 'Cela doit être lui'", "rep": "it must be him"}
+        {"titre": "Le Present Perfect", "regle": "Lien entre passé et présent. HAVE + Participe passé.", "ex": "I have lost my keys. She has lived here for ten years.", "test": "Traduisez : 'J'ai perdu mes clés' (lost my keys)", "rep": "i have lost my keys"},
+        {"titre": "Le Conditionnel Type 2", "regle": "Hypothèse imaginaire : IF + Prétérit, WOULD + Verbe.", "ex": "If I were rich, I would buy a boat.", "test": "Traduisez : 'Si j'étais riche' (If I were rich)", "rep": "if i were rich"},
+        {"titre": "La Voix Passive", "regle": "Mise en avant de l'objet. BE + Participe passé.", "ex": "The book was written in 1920.", "test": "Traduisez : 'Le livre a été écrit' (The book was written)", "rep": "the book was written"},
+        {"titre": "Le Discours Indirect", "regle": "Rapporter des paroles. Le présent devient passé.", "ex": "She said: 'I am tired' devient She said she was tired.", "test": "Traduisez : 'Elle a dit qu'elle était fatiguée'", "rep": "she said she was tired"},
+        {"titre": "Les Modaux de Déduction", "regle": "Must (certitude), Might (possibilité).", "ex": "It must be true. He might come later.", "test": "Traduisez : 'Cela doit être vrai' (must be true)", "rep": "it must be true"}
     ]
 }
 
@@ -49,9 +48,7 @@ def parler_sequence(annonce_fr, exemple_en, question_fr):
     ex_en = re.sub(r'\(.*?\)', '', exemple_en).replace("'", "\\'")
     ann_fr = annonce_fr.replace("'", "\\'")
     que_fr = question_fr.replace("'", "\\'")
-    
-    js = f"""
-    <script>
+    js = f"""<script>
     window.speechSynthesis.cancel();
     var m1 = new SpeechSynthesisUtterance('{ann_fr}'); m1.lang = 'fr-FR'; m1.rate = 0.9;
     var m2 = new SpeechSynthesisUtterance('{ex_en}'); m2.lang = 'en-US'; m2.rate = 0.8;
@@ -59,8 +56,7 @@ def parler_sequence(annonce_fr, exemple_en, question_fr):
     m1.onend = function() {{ window.speechSynthesis.speak(m2); }};
     m2.onend = function() {{ window.speechSynthesis.speak(m3); }};
     window.speechSynthesis.speak(m1);
-    </script>
-    """
+    </script>"""
     st.components.v1.html(js, height=0)
 
 def parler_simple(txt):
@@ -89,19 +85,17 @@ if st.session_state.etape == "presentation":
 
 elif st.session_state.etape == "cours":
     cours_actuel = PROGRAMME[st.session_state.niveau]
-    
     if st.session_state.leçon_index < len(cours_actuel):
         leçon = cours_actuel[st.session_state.leçon_index]
-        titre = f"Leçon {st.session_state.leçon_index + 1} : {leçon['titre']}"
         annonce = f"Leçon numéro {st.session_state.leçon_index + 1}. {leçon['titre']}."
         
-        # Audio
+        # Gestion Audio
         key = f"{st.session_state.niveau}_{st.session_state.leçon_index}"
         if st.session_state.last_audio_key != key:
             parler_sequence(annonce, leçon['ex'], leçon['test'])
             st.session_state.last_audio_key = key
 
-        st.title(titre)
+        st.title(f"Leçon {st.session_state.leçon_index + 1} : {leçon['titre']}")
         st.info(f"*Grammaire :* {leçon['regle']}")
         st.write(f"*Exemples :* {leçon['ex']}")
         st.divider()
@@ -118,7 +112,7 @@ elif st.session_state.etape == "cours":
                     st.error(f"Mauvaise réponse. La correction est : {leçon['rep']}")
     else:
         st.balloons()
-        st.success(f"Bravo ! Vous avez terminé le niveau {st.session_state.niveau}.")
+        st.success(f"Bravo ! Niveau {st.session_state.niveau} terminé.")
         if st.button("Retour à l'accueil"):
             st.session_state.leçon_index = 0
             st.session_state.etape = "presentation"
