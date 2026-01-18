@@ -1,8 +1,9 @@
 import streamlit as st
 
-# --- 1. CONFIGURATION ET STYLE ---
+# --- 1. CONFIGURATION DE LA PAGE ---
 st.set_page_config(page_title="Clarisse English Academy", page_icon="🎓", layout="wide")
 
+# --- STYLE CSS ---
 st.markdown("""
     <style>
     .main { background-color: #f0f2f6; }
@@ -26,7 +27,7 @@ if 'leçon_index' not in st.session_state:
 if 'niveau' not in st.session_state:
     st.session_state.niveau = "Débutant"
 
-# --- 3. PROGRAMME RESTRUCTURÉ (60 LEÇONS) ---
+# --- 3. PROGRAMME COMPLET (Leçons 1 à 60) ---
 PROGRAMME = {
     "Débutant": [
         {
@@ -56,6 +57,13 @@ PROGRAMME = {
             "ex": "Forty-two (Quarante-deux), One hundred euros (Cent euros)", 
             "test": "Traduis 'Cinquante' :", 
             "rep": "fifty"
+        },
+        {
+            "titre": "L'Alphabet", 
+            "regle": "A [eɪ], E [iː], G [dʒ], J [dʒeɪ].", 
+            "ex": "Apple (Pomme), Book (Livre), Cat (Chat)", 
+            "test": "Épelle 'cat' :", 
+            "rep": "cat"
         }
     ],
     "Intermédiaire": [
@@ -66,9 +74,8 @@ PROGRAMME = {
     ]
 }
 
-# --- 4. FONCTIONS AUDIO ---
+# --- 4. FONCTION AUDIO ---
 def parler(texte):
-    # On extrait l'anglais avant la parenthèse
     anglais = texte.split('(')[0].strip()
     js = f"const synth = window.speechSynthesis; const utter = new SpeechSynthesisUtterance('{anglais}'); utter.lang = 'en-US'; synth.speak(utter);"
     st.components.v1.html(f"<script>{js}</script>", height=0)
@@ -79,13 +86,16 @@ if st.session_state.etape == "presentation":
     st.write("Bonjour, je me présente, je m'appelle Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage. Quel est ton niveau actuel ?")
     c1, c2, c3 = st.columns(3)
     if c1.button("Débutant"): 
-        st.session_state.niveau, st.session_state.etape = "Débutant", "cours"
+        st.session_state.niveau = "Débutant"
+        st.session_state.etape = "cours"
         st.rerun()
     if c2.button("Intermédiaire"): 
-        st.session_state.niveau, st.session_state.etape = "Intermédiaire", "cours"
+        st.session_state.niveau = "Intermédiaire"
+        st.session_state.etape = "cours"
         st.rerun()
     if c3.button("Avancé"): 
-        st.session_state.niveau, st.session_state.etape = "Avancé", "cours"
+        st.session_state.niveau = "Avancé"
+        st.session_state.etape = "cours"
         st.rerun()
 
 elif st.session_state.etape == "cours":
@@ -97,13 +107,14 @@ elif st.session_state.etape == "cours":
     st.sidebar.progress((st.session_state.leçon_index + 1) / len(liste))
     
     if st.sidebar.button("⏮️ Menu"):
-        st.session_state.etape, st.session_state.leçon_index = "presentation", 0
+        st.session_state.etape = "presentation"
+        st.session_state.leçon_index = 0
         st.rerun()
 
     st.title(f"Leçon {st.session_state.leçon_index + 1} : {leçon['titre']}")
     st.info(f"*Règle :* {leçon['regle']}")
-    st.write(f"*Exemple :* {leçon['ex']}")
-    if st.button("Prononciation 🔊"): 
+    st.write(f"*Exemples :* {leçon['ex']}")
+    if st.button("Prononciation"): 
         parler(leçon['ex'])
     
     st.divider()
@@ -122,5 +133,3 @@ elif st.session_state.etape == "cours":
                 st.success("Félicitations ! Niveau terminé.")
         else:
             st.error("Réessaie !")
-Envoyé
-Écrire à
