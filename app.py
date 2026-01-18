@@ -46,34 +46,46 @@ PROGRAMME = {
     ]
 }
 
-# --- 4. FONCTION AUDIO AMÉLIORÉE ---
-def parler(texte, lang='en-US'):
-    # Si c'est de l'anglais, on nettoie les parenthèses (qui contiennent souvent la traduction)
-    if lang == 'en-US':
-        texte = re.sub(r'\(.*?\)', '', texte)
+# --- 4. FONCTION AUDIO ---
+def parler(texte_en, texte_fr=None):
+    # Nettoyage pour l'anglais
+    phrase_en = re.sub(r'\(.*?\)', '', texte_en).replace("'", "\\'")
     
-    js = f"""
-    <script>
-    window.speechSynthesis.cancel();
-    var m = new SpeechSynthesisUtterance('{texte.replace("'", "\\'")}');
-    m.lang = '{lang}';
-    m.rate = 0.9;
-    window.speechSynthesis.speak(m);
-    </script>
-    """
-    st.components.v1.html(js, height=0)
+    # Construction du script JS
+    if texte_fr:
+        phrase_fr = texte_fr.replace("'", "\\'")
+        js_code = f"""
+        window.speechSynthesis.cancel();
+        var m_en = new SpeechSynthesisUtterance('{phrase_en}');
+        m_en.lang = 'en-US';
+        m_en.rate = 0.8;
+        var m_fr = new SpeechSynthesisUtterance('{phrase_fr}');
+        m_fr.lang = 'fr-FR';
+        m_fr.rate = 0.9;
+        m_en.onend = function() {{ window.speechSynthesis.speak(m_fr); }};
+        window.speechSynthesis.speak(m_en);
+        """
+    else:
+        # Cas de l'intro ou feedback (Français uniquement)
+        js_code = f"""
+        window.speechSynthesis.cancel();
+        var m = new SpeechSynthesisUtterance('{phrase_en}');
+        m.lang = 'fr-FR';
+        m.rate = 0.9;
+        window.speechSynthesis.speak(m);
+        """
+
+    st.components.v1.html(f"<script>{js_code}</script>", height=0)
 
 # --- 5. INTERFACE ---
 
-# ÉTAPE : PRÉSENTATION
 if st.session_state.etape == "presentation":
     st.title("🎓 Clarisse - English Academy")
-    intro_text = "Bonjour, je me présente, je m'appelle Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage. Pour commencer notre programme, quel est ton niveau actuel ?"
-    st.write(intro_text)
+    intro = "Bonjour, je me présente, je m'appelle Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage. Pour commencer notre programme, quel est ton niveau actuel ?"
+    st.write(intro)
     
-    # Audio de présentation à l'ouverture
     if st.session_state.last_audio_key != "intro":
-        parler(intro_text, lang='fr-FR')
+        parler(intro) # Parle en français par défaut ici
         st.session_state.last_audio_key = "intro"
 
     c1, c2, c3 = st.columns(3)
@@ -87,7 +99,6 @@ if st.session_state.etape == "presentation":
         st.session_state.niveau, st.session_state.etape = "Avancé", "cours"
         st.rerun()
 
-# ÉTAPE : COURS
 elif st.session_state.etape == "cours":
     liste_base = PROGRAMME[st.session_state.niveau]
     
@@ -96,8 +107,10 @@ elif st.session_state.etape == "cours":
             leçon = liste_base[st.session_state.leçon_index]
             titre_page = f"Leçon {st.session_state.leçon_index + 1} : {leçon['titre']}"
         else:
-            st.write("Félicitations ! Niveau terminé.")
-            if st.button("Retour"): 
+            st.balloons()
+            st.success("Félicitations ! Vous avez terminé ce niveau.")
+            if st.button("Recommencer"):
+                st.session_state.leçon_index = 0
                 st.session_state.etape = "presentation"
                 st.rerun()
             st.stop()
@@ -105,39 +118,22 @@ elif st.session_state.etape == "cours":
         leçon = st.session_state.erreurs[0]
         titre_page = f"Révision : {leçon['titre']}"
 
-    # Audio Automatique (Anglais pour l'exemple, puis Français pour la question)
+    # Audio Automatique : Lit l'exemple (EN) puis la question (FR)
     audio_key = f"{st.session_state.niveau}_{st.session_state.leçon_index}_{st.session_state.mode_revision}"
     if st.session_state.last_audio_key != audio_key:
-        # On peut enchaîner les deux via un petit délai en JS ou simplement lire la consigne
-        parler(f"{leçon['ex']}. {leçon['test']}", lang='fr-FR') 
-        # Note : Le navigateur risque de lire l'anglais avec l'accent français si on ne sépare pas.
-        # Pour faire simple ici, elle lit tout le bloc d'exercice.
+        parler(leçon['ex'], leçon['test'])
         st.session_state.last_audio_key = audio_key
 
     st.title(titre_page)
-    st.info(f"Règle : {leçon['regle']}")
-    st.write(f"Exemples : {leçon['ex']}")
+    st.info(f"*Règle :* {leçon['regle']}")
+    st.write(f"*Exemples :* {leçon['ex']}")
     
     st.divider()
     st.subheader("📝 Exercice")
-    st.write(f"👉 Question : {leçon['test']}")
+    st.write(f"👉 *Question :* {leçon['test']}")
     
     with st.form(key='exercice_form', clear_on_submit=True):
         reponse = st.text_input("Ta réponse :").lower().strip()
         submit = st.form_submit_button("Valider")
         
-        if submit:
-            if reponse == leçon['rep']:
-                st.success("✨ C'est bien !")
-                if st.session_state.mode_revision:
-                    st.session_state.erreurs.pop(0)
-                    if not st.session_state.erreurs: st.session_state.mode_revision = False
-                else:
-                    st.session_state.leçon_index += 1
-                st.rerun()
-            else:
-                st.error(f"❌ Mauvaise réponse. La bonne était : '{leçon['rep']}'")
-                if leçon not in st.session_state.erreurs:
-                    st.session_state.erreurs.append(leçon)
-Envoyé
-Écrire à
+        if submit
