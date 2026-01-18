@@ -30,11 +30,12 @@ def parler(txt):
     js = f"<script>window.speechSynthesis.cancel(); var m = new SpeechSynthesisUtterance('{txt.replace("'", "\\'")}'); m.lang = 'fr-FR'; window.speechSynthesis.speak(m);</script>"
     st.components.v1.html(js, height=0)
 
-# --- 5. STYLE CSS (CENTRAGE + COULEURS) ---
+# --- 5. STYLE CSS (CENTRAGE + COULEURS FIXÉES) ---
 st.markdown("""
     <style>
+    /* Force le centrage des boutons dans les colonnes */
     .stButton > button {
-        height: 70px !important;
+        height: 75px !important;
         width: 100% !important;
         font-size: 22px !important;
         font-weight: bold !important;
@@ -42,12 +43,18 @@ st.markdown("""
         border-radius: 15px !important;
         text-transform: uppercase !important;
         border: none !important;
+        box-shadow: 0px 4px 6px rgba(0,0,0,0.2) !important;
     }
-    /* Couleurs de la page de présentation */
-    div.stButton:nth-of-type(1) button { background-color: #2ED573 !important; } /* VERT */
-    div.stButton:nth-of-type(2) button { background-color: #ECCC68 !important; } /* JAUNE */
-    div.stButton:nth-of-type(3) button { background-color: #A29BFE !important; } /* VIOLET */
-    
+
+    /* Attribution STRICTE des couleurs par position */
+    /* DEBUTANT : VERT (Photo 6) */
+    div.stButton:nth-of-type(1) button { background-color: #2ED573 !important; }
+    /* INTERMEDIAIRE : JAUNE/ORANGE (Photo 6) */
+    div.stButton:nth-of-type(2) button { background-color: #ECCC68 !important; }
+    /* AVANCE : VIOLET (Photo 6) */
+    div.stButton:nth-of-type(3) button { background-color: #A29BFE !important; }
+
+    /* Bouton DEMARRER (Gris anthracite) */
     .start-btn button { background-color: #2F3542 !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -56,8 +63,8 @@ st.markdown("""
 
 # ÉTAPE 0 : PAGE DE DÉMARRAGE
 if st.session_state.etape == "start_page":
-    st.markdown("<h1 style='text-align: center;'>🎓 Clarisse English Academy</h1>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
+    st.markdown("<h1 style='text-align: center; margin-top: 50px;'>🎓 Clarisse English Academy</h1>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         st.markdown('<div class="start-btn">', unsafe_allow_html=True)
         if st.button("DÉMARRER"):
@@ -69,10 +76,10 @@ if st.session_state.etape == "start_page":
 elif st.session_state.etape == "presentation":
     st.markdown("<h1 style='text-align: center;'>🎓 Clarisse English Academy</h1>", unsafe_allow_html=True)
     msg = "Bonjour, je m'appelle Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage. Quel est ton niveau actuel ?"
-    st.markdown(f"<h3 style='text-align: center;'>{msg}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align: center; padding: 20px;'>{msg}</h3>", unsafe_allow_html=True)
     parler(msg)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         if st.button("DÉBUTANT"):
             st.session_state.update({"niveau": "Débutant", "etape": "cours", "leçon_index": 0, "vies": 5})
@@ -84,7 +91,7 @@ elif st.session_state.etape == "presentation":
             st.session_state.update({"niveau": "Avancé", "etape": "cours", "leçon_index": 0, "vies": 5})
             st.rerun()
 
-# ÉTAPE 2 : LE COURS ET LES EXERCICES
+# ÉTAPE 2 : LE COURS
 elif st.session_state.etape == "cours":
     st.markdown(f"<h3 style='text-align: center;'>❤️ Vies : {st.session_state.vies} | ⭐ XP : {st.session_state.xp}</h3>", unsafe_allow_html=True)
     
@@ -93,7 +100,7 @@ elif st.session_state.etape == "cours":
     
     if idx < len(leçons):
         courant = leçons[idx]
-        st.header(f"Niveau {st.session_state.niveau} - Leçon {idx + 1}")
+        st.header(f"Leçon {idx + 1} : {courant['titre']}")
         st.info(f"*Règle :* {courant['regle']}\n\n**Exemple :** {courant['ex']}")
         
         reponse = st.text_input(f"EXERCICE : {courant['test']}", key=f"ex_{idx}").lower().strip()
@@ -121,7 +128,9 @@ elif st.session_state.etape == "cours":
 
 # ÉTAPE 3 : GAME OVER
 elif st.session_state.etape == "game_over":
-    st.markdown("<h1 style='text-align: center;'>❌ GAME OVER</h1>", unsafe_allow_html=True)
-    if st.button("RECOMMENCER"):
-        st.session_state.update({"etape": "start_page", "vies": 5, "xp": 0})
-        st.rerun()
+    st.markdown("<h1 style='text-align: center; color: red;'>❌ GAME OVER</h1>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 1.5, 1])
+    with col2:
+        if st.button("RECOMMENCER"):
+            st.session_state.update({"etape": "start_page", "vies": 5, "xp": 0})
+            st.rerun()
