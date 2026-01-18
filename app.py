@@ -56,17 +56,19 @@ def parler(texte_en, texte_fr=None):
         phrase_fr = texte_fr.replace("'", "\\'")
         js_code = f"""
         window.speechSynthesis.cancel();
+        var m_fr_intro = new SpeechSynthesisUtterance('{phrase_fr}');
+        m_fr_intro.lang = 'fr-FR';
+        m_fr_intro.rate = 0.9;
+        
         var m_en = new SpeechSynthesisUtterance('{phrase_en}');
         m_en.lang = 'en-US';
         m_en.rate = 0.8;
-        var m_fr = new SpeechSynthesisUtterance('{phrase_fr}');
-        m_fr.lang = 'fr-FR';
-        m_fr.rate = 0.9;
-        m_en.onend = function() {{ window.speechSynthesis.speak(m_fr); }};
-        window.speechSynthesis.speak(m_en);
+
+        m_fr_intro.onend = function() {{ window.speechSynthesis.speak(m_en); }};
+        window.speechSynthesis.speak(m_fr_intro);
         """
     else:
-        # Cas de l'intro ou feedback (Français uniquement)
+        # Cas de l'intro (Français uniquement)
         js_code = f"""
         window.speechSynthesis.cancel();
         var m = new SpeechSynthesisUtterance('{phrase_en}');
@@ -85,7 +87,7 @@ if st.session_state.etape == "presentation":
     st.write(intro)
     
     if st.session_state.last_audio_key != "intro":
-        parler(intro) # Parle en français par défaut ici
+        parler(intro)
         st.session_state.last_audio_key = "intro"
 
     c1, c2, c3 = st.columns(3)
@@ -106,6 +108,7 @@ elif st.session_state.etape == "cours":
         if st.session_state.leçon_index < len(liste_base):
             leçon = liste_base[st.session_state.leçon_index]
             titre_page = f"Leçon {st.session_state.leçon_index + 1} : {leçon['titre']}"
+            phrase_annonce = f"Leçon numéro {st.session_state.leçon_index + 1}. {leçon['titre']}. Voici la question : {leçon['test']}"
         else:
             st.balloons()
             st.success("Félicitations ! Vous avez terminé ce niveau.")
@@ -117,11 +120,12 @@ elif st.session_state.etape == "cours":
     else:
         leçon = st.session_state.erreurs[0]
         titre_page = f"Révision : {leçon['titre']}"
+        phrase_annonce = f"Révision de la leçon : {leçon['titre']}. La question était : {leçon['test']}"
 
-    # Audio Automatique : Lit l'exemple (EN) puis la question (FR)
+    # Audio Automatique : Annonce le numéro/titre/question (FR) puis l'exemple (EN)
     audio_key = f"{st.session_state.niveau}_{st.session_state.leçon_index}_{st.session_state.mode_revision}"
     if st.session_state.last_audio_key != audio_key:
-        parler(leçon['ex'], leçon['test'])
+        parler(leçon['ex'], phrase_annonce)
         st.session_state.last_audio_key = audio_key
 
     st.title(titre_page)
