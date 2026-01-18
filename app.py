@@ -1,6 +1,6 @@
 import streamlit as st
 
-# --- 1. CONFIGURATION ET STYLE CSS ---
+# --- 1. CONFIGURATION ET STYLE ---
 st.set_page_config(page_title="Clarisse English Academy", page_icon="🎓", layout="wide")
 
 st.markdown("""
@@ -13,11 +13,8 @@ st.markdown("""
         background-color: #004a99;
         color: white;
         font-weight: bold;
-        border: none;
     }
-    .stButton>button:hover { background-color: #003366; color: #ffcc00; }
     h1 { color: #004a99; }
-    .stAlert { border-radius: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -29,39 +26,37 @@ if 'leçon_index' not in st.session_state:
 if 'niveau' not in st.session_state:
     st.session_state.niveau = "Débutant"
 
-# --- 3. PROGRAMME RESTRUCTURÉ (BASE SOLIDE) ---
+# --- 3. PROGRAMME RESTRUCTURÉ (60 LEÇONS) ---
 PROGRAMME = {
     "Débutant": [
         {
             "titre": "Le Verbe ÊTRE (To BE)", 
-            "regle": "Le verbe 'BE' sert à se présenter ou décrire. I am (Je suis), You are (Tu es), He/She is (Il/Elle est).", 
+            "regle": "I am (Je suis), You are (Tu es), He/She is (Il/Elle est).", 
             "ex": "I am Clarisse (Je suis Clarisse), She is happy (Elle est heureuse)", 
             "test": "Traduis 'Je suis' :", 
             "rep": "i am"
         },
         {
             "titre": "Le Verbe AVOIR (Have Got)", 
-            "regle": "Pour la possession. I have got (J'ai), You have got (Tu as), He/She has got (Il/Elle a).", 
+            "regle": "I have got (J'ai), You have got (Tu as), He/She has got (Il/Elle a).", 
             "ex": "I have got a book (J'ai un livre), He has got a car (Il a une voiture)", 
             "test": "Traduis 'J'ai' :", 
             "rep": "i have got"
         },
         {
             "titre": "Les Nombres (1 à 20)", 
-            "regle": "1: One, 2: Two, 3: Three, 4: Four, 5: Five... 10: Ten, 11: Eleven, 12: Twelve, 20: Twenty.", 
+            "regle": "1: One, 2: Two, 3: Three, 10: Ten, 11: Eleven, 12: Twelve, 20: Twenty.", 
             "ex": "Three cats (Trois chats), Ten apples (Dix pommes)", 
             "test": "Comment dit-on 'Huit' ?", 
             "rep": "eight"
         },
         {
-            "titre": "Les Nombres (Dizaines jusqu'à 100)", 
-            "regle": "30: Thirty, 40: Forty, 50: Fifty, 60: Sixty, 70: Seventy, 80: Eighty, 90: Ninety, 100: One hundred.", 
+            "titre": "Les Nombres (20 à 100)", 
+            "regle": "30: Thirty, 40: Forty, 50: Fifty, 100: One hundred.", 
             "ex": "Forty-two (Quarante-deux), One hundred euros (Cent euros)", 
             "test": "Traduis 'Cinquante' :", 
             "rep": "fifty"
-        },
-        {"titre": "L'Alphabet", "regle": "A [eɪ], E [iː], G [dʒ], J [dʒeɪ].", "ex": "Apple (Pomme), Book (Livre)", "test": "Épelle 'cat' :", "rep": "cat"},
-        {"titre": "Articles A/AN", "regle": "A devant consonne, AN devant voyelle.", "ex": "A boy (Un garçon), An orange (Une orange)", "test": "_ apple.", "rep": "an"}
+        }
     ],
     "Intermédiaire": [
         {"titre": "Present Perfect", "regle": "Have + Participe Passé.", "ex": "I have seen (J'ai vu)", "test": "Traduis 'J'ai vu' :", "rep": "i have seen"}
@@ -71,14 +66,11 @@ PROGRAMME = {
     ]
 }
 
-# --- 4. FONCTION AUDIO ---
-def parler(texte_complet):
-    segments = texte_complet.split(',')
-    a_lire = ""
-    for s in segments:
-        anglais = s.split('(')[0].strip()
-        a_lire += anglais + ". "
-    js = f"const synth = window.speechSynthesis; const utter = new SynthesisUtterance('{a_lire}'); utter.lang = 'en-US'; synth.speak(utter);"
+# --- 4. FONCTIONS AUDIO ---
+def parler(texte):
+    # On extrait l'anglais avant la parenthèse
+    anglais = texte.split('(')[0].strip()
+    js = f"const synth = window.speechSynthesis; const utter = new SpeechSynthesisUtterance('{anglais}'); utter.lang = 'en-US'; synth.speak(utter);"
     st.components.v1.html(f"<script>{js}</script>", height=0)
 
 # --- 5. INTERFACE ---
@@ -104,15 +96,15 @@ elif st.session_state.etape == "cours":
     st.sidebar.write(f"Niveau : *{st.session_state.niveau}*")
     st.sidebar.progress((st.session_state.leçon_index + 1) / len(liste))
     
-    if st.sidebar.button("⏮️ Menu Principal"):
+    if st.sidebar.button("⏮️ Menu"):
         st.session_state.etape, st.session_state.leçon_index = "presentation", 0
         st.rerun()
 
-    st.title(f"Leçon {st.session_state.leçon_index + 1}")
-    st.header(leçon['titre'])
-    st.info(f"*💡 Règle :* {leçon['regle']}")
-    st.write(f*📢 Exemples :** {leçon['ex']}")
-    if st.button("Prononciation 🔊"): parler(leçon['ex'])
+    st.title(f"Leçon {st.session_state.leçon_index + 1} : {leçon['titre']}")
+    st.info(f"*Règle :* {leçon['regle']}")
+    st.write(f"*Exemple :* {leçon['ex']}")
+    if st.button("Prononciation 🔊"): 
+        parler(leçon['ex'])
     
     st.divider()
     st.subheader("📝 Exercice")
@@ -130,3 +122,5 @@ elif st.session_state.etape == "cours":
                 st.success("Félicitations ! Niveau terminé.")
         else:
             st.error("Réessaie !")
+Envoyé
+Écrire à
