@@ -4,6 +4,25 @@ import re
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="Clarisse English Academy", page_icon="🎓", layout="wide")
 
+# Injection de CSS pour des boutons personnalisés et colorés
+st.markdown("""
+    <style>
+    div.stButton > button {
+        height: 80px;
+        font-size: 24px !important;
+        font-weight: bold;
+        color: white !important;
+        border-radius: 15px;
+        margin-bottom: 10px;
+    }
+    /* Couleur Débutant */
+    .stButton > button[kind="primary"]:nth-of-type(1) { background-color: #1E90FF !important; border: none; }
+    /* Couleur Intermédiaire */
+    .stButton > button[kind="secondary"] { background-color: #FF8C00 !important; color: white !important; border: none; }
+    /* Couleur Avancé (on utilise un hack CSS ou une logique de colonne) */
+    </style>
+    """, unsafe_allow_html=True)
+
 # --- 2. INITIALISATION DES ÉTATS ---
 if 'etape' not in st.session_state: st.session_state.etape = "start_page"
 if 'niveau' not in st.session_state: st.session_state.niveau = "Débutant"
@@ -52,36 +71,34 @@ def parler_simple(txt):
 
 # --- 5. INTERFACE ---
 
-# ÉTAPE 0 : PAGE DÉMARRER
 if st.session_state.etape == "start_page":
     st.title("🎓 Clarisse English Academy")
-    st.write("### Bienvenue dans votre nouvel espace d'apprentissage.")
     if st.button("DÉMARRER", use_container_width=True):
         st.session_state.etape = "presentation"
         st.rerun()
 
-# ÉTAPE 1 : PRÉSENTATION CLARISSE
 elif st.session_state.etape == "presentation":
     st.title("🎓 Clarisse English Academy")
-    intro = "Bonjour, je me présente, je m'appelle Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage. Pour commencer notre programme, quel est ton niveau actuel ?"
+    intro = "Bonjour, je me présente, je m'appelle Clarisse. Choisissez votre niveau :"
     st.write(intro)
     
     if st.session_state.last_audio_key != "intro":
         parler_simple(intro)
         st.session_state.last_audio_key = "intro"
     
-    c1, c2, c3 = st.columns(3)
-    if c1.button("Débutant"): 
+    # Boutons empilés verticalement avec couleurs spécifiques
+    if st.button("🔵 Débutant", use_container_width=True):
         st.session_state.update({"niveau": "Débutant", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5, "xp": 0})
         st.rerun()
-    if c2.button("Intermédiaire"): 
+        
+    if st.button("🟠 Intermédiaire", use_container_width=True):
         st.session_state.update({"niveau": "Intermédiaire", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5, "xp": 0})
         st.rerun()
-    if c3.button("Avancé"): 
+        
+    if st.button("🟢 Avancé", use_container_width=True):
         st.session_state.update({"niveau": "Avancé", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5, "xp": 0})
         st.rerun()
 
-# ÉTAPE 2 : LE COURS (STYLE DUOLINGO)
 elif st.session_state.etape == "cours":
     liste = PROGRAMME[st.session_state.niveau]
     
@@ -89,7 +106,7 @@ elif st.session_state.etape == "cours":
         st.write(f"### 👤 Profil")
         st.write(f"❤️ Vies : {'❤️' * st.session_state.vies}")
         st.write(f"⭐ XP : {st.session_state.xp}")
-        if st.button("Quitter la session"):
+        if st.button("Quitter"):
             st.session_state.etape = "presentation"
             st.rerun()
 
@@ -108,7 +125,7 @@ elif st.session_state.etape == "cours":
     else:
         if st.session_state.erreurs:
             leçon = st.session_state.erreurs[0]
-            st.warning("🔄 SESSION DE RÉVISION")
+            st.warning("🔄 RÉVISION")
             titre = "Rattrapage"
         else:
             st.session_state.etape = "fin"
@@ -151,15 +168,13 @@ elif st.session_state.etape == "cours":
                     if leçon not in st.session_state.erreurs:
                         st.session_state.erreurs.append(leçon)
                     if st.session_state.vies <= 0:
-                        st.error("Plus de vies ! Recommence le niveau.")
+                        st.error("Plus de vies !")
                         st.session_state.update({"leçon_index": 0, "vies": 5, "erreurs": []})
                     st.rerun()
 
-# ÉTAPE 3 : FIN DE NIVEAU
 elif st.session_state.etape == "fin":
     st.balloons()
     st.success(f"Niveau {st.session_state.niveau} terminé !")
-    st.write(f"Score total : {st.session_state.xp} XP")
     if st.button("Menu principal"):
-        st.session_state.update({"etape": "presentation", "leçon_index": 0, "erreurs": [], "mode_revision": False})
+        st.session_state.etape = "presentation"
         st.rerun()
