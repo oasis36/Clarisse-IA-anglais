@@ -1,149 +1,108 @@
 import streamlit as st
+import re
 
-# --- 1. CONFIGURATION DE LA PAGE ---
+# --- 1. CONFIGURATION ---
 st.set_page_config(page_title="Clarisse English Academy", page_icon="🎓", layout="wide")
 
-# --- STYLE CSS ---
 st.markdown("""
     <style>
     .main { background-color: #f0f2f6; }
-    .stButton>button {
-        width: 100%;
-        border-radius: 20px;
-        height: 3em;
-        background-color: #004a99;
-        color: white;
-        font-weight: bold;
-    }
+    .stButton>button { width: 100%; border-radius: 20px; background-color: #004a99; color: white; font-weight: bold; }
     h1 { color: #004a99; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. INITIALISATION ---
-if 'etape' not in st.session_state:
-    st.session_state.etape = "presentation"
-if 'leçon_index' not in st.session_state:
-    st.session_state.leçon_index = 0
-if 'niveau' not in st.session_state:
-    st.session_state.niveau = "Débutant"
-if 'last_leçon' not in st.session_state:
-    st.session_state.last_leçon = -1
+# --- 2. INITIALISATION DES VARIABLES ---
+if 'etape' not in st.session_state: st.session_state.etape = "presentation"
+if 'niveau' not in st.session_state: st.session_state.niveau = "Débutant"
+if 'leçon_index' not in st.session_state: st.session_state.leçon_index = 0
+if 'erreurs' not in st.session_state: st.session_state.erreurs = []
+if 'mode_revision' not in st.session_state: st.session_state.mode_revision = False
+if 'last_audio_key' not in st.session_state: st.session_state.last_audio_key = ""
 
-# --- 3. PROGRAMME COMPLET ---
+# --- 3. PROGRAMME (Extrait) ---
 PROGRAMME = {
     "Débutant": [
-        {
-            "titre": "Le Verbe ÊTRE (To BE)", 
-            "regle": "I am (Je suis), You are (Tu es), He/She is (Il/Elle est).", 
-            "ex": "I am Clarisse (Je suis Clarisse), She is happy (Elle est heureuse)", 
-            "test": "Traduis 'Je suis' :", 
-            "rep": "i am"
-        },
-        {
-            "titre": "Le Verbe AVOIR (Have Got)", 
-            "regle": "I have got (J'ai), You have got (Tu as), He/She has got (Il/Elle a).", 
-            "ex": "I have got a book (J'ai un livre), He has got a car (Il a une voiture)", 
-            "test": "Traduis 'J'ai' :", 
-            "rep": "i have got"
-        },
-        {
-            "titre": "Les Nombres (1 à 20)", 
-            "regle": "1: One, 2: Two, 3: Three, 10: Ten, 11: Eleven, 12: Twelve, 20: Twenty.", 
-            "ex": "Three cats (Trois chats), Ten apples (Dix pommes)", 
-            "test": "Comment dit-on 'Huit' ?", 
-            "rep": "eight"
-        },
-        {
-            "titre": "Les Nombres (20 à 100)", 
-            "regle": "30: Thirty, 40: Forty, 50: Fifty, 100: One hundred.", 
-            "ex": "Forty-two (Quarante-deux), One hundred euros (Cent euros)", 
-            "test": "Traduis 'Cinquante' :", 
-            "rep": "fifty"
-        }
+        {"titre": "Le Verbe ÊTRE", "regle": "I am, You are, He/She is.", "ex": "I am Clarisse (Je suis Clarisse), She is happy (Elle est heureuse)", "test": "Traduis 'Je suis' :", "rep": "i am"},
+        {"titre": "Le Verbe AVOIR", "regle": "I have got, He has got.", "ex": "I have got a book (J'ai un livre), He has got a car (Il a une voiture)", "test": "Traduis 'J'ai' :", "rep": "i have got"},
+        {"titre": "Nombres 1-20", "regle": "One, Two, Three... Eight, Nine, Ten.", "ex": "Three cats (Trois chats), Eight apples (Huit pommes)", "test": "Comment dit-on 'Huit' ?", "rep": "eight"},
+        {"titre": "Nombres 20-100", "regle": "Thirty, Forty, Fifty, One hundred.", "ex": "Fifty euros (Cinquante euros)", "test": "Traduis 'Cinquante' :", "rep": "fifty"}
     ],
-    "Intermédiaire": [
-        {"titre": "Present Perfect", "regle": "Have + Participe Passé.", "ex": "I have seen (J'ai vu), She has worked (Elle a travaillé)", "test": "Traduis 'J'ai vu' :", "rep": "i have seen"}
-    ],
-    "Avancé": [
-        {"titre": "Conditionnel 3", "regle": "If + Past Perfect -> Would have + PP.", "ex": "If I had known (Si j'avais su), I would have stayed (Je serais resté)", "test": "If I _ (be) there.", "rep": "had been"}
-    ]
+    "Intermédiaire": [{"titre": "Present Perfect", "regle": "Have + PP.", "ex": "I have seen (J'ai vu)", "test": "Traduis 'J'ai vu' :", "rep": "i have seen"}],
+    "Avancé": [{"titre": "Conditionnel 3", "regle": "If + Past Perfect.", "ex": "If I had known (Si j'avais su)", "test": "If I _ (be) there.", "rep": "had been"}]
 }
 
-# --- 4. FONCTION AUDIO AUTOMATIQUE ---
-def parler_automatique(texte):
-    # Nettoyage pour extraire tout l'anglais de la phrase (avant chaque parenthèse)
-    import re
-    phrase_anglaise = re.sub(r'\(.*?\)', '', texte).replace(',', '.')
-    
-    js = f"""
-    <script>
-    var msg = new SpeechSynthesisUtterance('{phrase_anglaise}');
-    msg.lang = 'en-US';
-    msg.rate = 0.9;
-    window.speechSynthesis.speak(msg);
-    </script>
-    """
+# --- 4. AUDIO ---
+def parler(texte):
+    phrase = re.sub(r'\(.*?\)', '', texte).replace(',', '.')
+    js = f"<script>var m=new SpeechSynthesisUtterance('{phrase}');m.lang='en-US';window.speechSynthesis.speak(m);</script>"
     st.components.v1.html(js, height=0)
 
-# --- 5. INTERFACE ---
+# --- 5. LOGIQUE D'INTERFACE ---
 if st.session_state.etape == "presentation":
     st.title("🎓 Clarisse - English Academy")
-    st.write("Bonjour, je me présente, je m'appelle Clarisse. Je suis ton IA dédiée à ton programme d'apprentissage. Quel est ton niveau actuel ?")
+    st.write("Bonjour, je me présente, je m'appelle Clarisse. Choisissez votre niveau :")
     c1, c2, c3 = st.columns(3)
-    if c1.button("Débutant"): 
-        st.session_state.niveau = "Débutant"
-        st.session_state.etape = "cours"
-        st.rerun()
-    if c2.button("Intermédiaire"): 
-        st.session_state.niveau = "Intermédiaire"
-        st.session_state.etape = "cours"
-        st.rerun()
-    if c3.button("Avancé"): 
-        st.session_state.niveau = "Avancé"
-        st.session_state.etape = "cours"
-        st.rerun()
+    if c1.button("Débutant"): st.session_state.niveau, st.session_state.etape = "Débutant", "cours"; st.rerun()
+    if c2.button("Intermédiaire"): st.session_state.niveau, st.session_state.etape = "Intermédiaire", "cours"; st.rerun()
+    if c3.button("Avancé"): st.session_state.niveau, st.session_state.etape = "Avancé", "cours"; st.rerun()
 
 elif st.session_state.etape == "cours":
-    liste = PROGRAMME[st.session_state.niveau]
-    leçon = liste[st.session_state.leçon_index]
+    liste_base = PROGRAMME[st.session_state.niveau]
     
-    # Déclenchement automatique de la voix au chargement de la leçon
-    if st.session_state.last_leçon != st.session_state.leçon_index:
-        parler_automatique(leçon['ex'])
-        st.session_state.last_leçon = st.session_state.leçon_index
+    # Déterminer quelle leçon afficher
+    if not st.session_state.mode_revision:
+        index = st.session_state.leçon_index
+        leçon = liste_base[index]
+        titre_complet = f"Leçon {index + 1} : {leçon['titre']}"
+    else:
+        index = 0
+        leçon = st.session_state.erreurs[index]
+        titre_complet = f"Révision : {leçon['titre']}"
 
-    st.sidebar.title("💎 Espace Clarisse")
-    st.sidebar.write(f"Niveau : *{st.session_state.niveau}*")
-    st.sidebar.progress((st.session_state.leçon_index + 1) / len(liste))
-    
-    if st.sidebar.button("⏮️ Menu"):
-        st.session_state.etape = "presentation"
-        st.session_state.leçon_index = 0
-        st.session_state.last_leçon = -1
-        st.rerun()
+    # Audio automatique
+    audio_key = f"{st.session_state.niveau}_{st.session_state.leçon_index}_{st.session_state.mode_revision}"
+    if st.session_state.last_audio_key != audio_key:
+        parler(leçon['ex'])
+        st.session_state.last_audio_key = audio_key
 
-    st.title(f"Leçon {st.session_state.leçon_index + 1} : {leçon['titre']}")
+    st.title(titre_complet)
     st.info(f"*Règle :* {leçon['regle']}")
     st.write(f"*Exemples :* {leçon['ex']}")
     
-    st.divider()
-    st.subheader("📝 Exercice")
-    st.write(leçon['test'])
-    
-    # Utilisation du formulaire pour que ENTER valide tout d'un coup
     with st.form(key='exercice_form', clear_on_submit=True):
-        reponse = st.text_input("Ta réponse (Appuie sur ENTER pour valider) :").lower().strip()
+        reponse = st.text_input("Ta réponse (ENTER pour valider) :").lower().strip()
         submit = st.form_submit_button("Valider")
         
         if submit:
             if reponse == leçon['rep']:
-                st.success("✨ C'est bien !")
-                if st.session_state.leçon_index < len(liste) - 1:
+                st.success("✨ Excellent !")
+                if st.session_state.mode_revision:
+                    st.session_state.erreurs.pop(0)
+                else:
                     st.session_state.leçon_index += 1
-                    st.rerun()
+            else:
+                st.error(f"❌ Mauvaise réponse. La bonne était : '{leçon['rep']}'")
+                parler(f"The correct answer is {leçon['rep']}")
+                if leçon not in st.session_state.erreurs:
+                    st.session_state.erreurs.append(leçon)
+                if not st.session_state.mode_revision:
+                    st.session_state.leçon_index += 1
+
+            # Vérification de fin de cycle
+            if not st.session_state.mode_revision and st.session_state.leçon_index >= len(liste_base):
+                if st.session_state.erreurs:
+                    st.session_state.mode_revision = True
+                    st.warning("Passons maintenant aux révisions des erreurs.")
                 else:
                     st.balloons()
-                    st.success("Félicitations ! Niveau terminé.")
-            else:
-                st.error("Réessaie ! Clarisse va répéter l'exemple.")
-                parler_automatique(leçon['ex'])
+                    st.session_state.etape = "presentation"
+            
+            if st.session_state.mode_revision and not st.session_state.erreurs:
+                st.balloons()
+                st.success("Bravo ! Tu as tout maîtrisé.")
+                st.session_state.etape = "presentation"
+                st.session_state.mode_revision = False
+                st.session_state.leçon_index = 0
+            
+            st.rerun()
