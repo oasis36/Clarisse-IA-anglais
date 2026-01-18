@@ -4,26 +4,32 @@ import re
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="Clarisse English Academy", page_icon="🎓", layout="wide")
 
-# Injection de CSS pour des boutons personnalisés et colorés
+# Style CSS pour des barres de boutons entièrement colorées
 st.markdown("""
     <style>
-    div.stButton > button {
-        height: 80px;
-        font-size: 24px !important;
+    /* Style de base pour les boutons de niveau */
+    .stButton > button {
+        height: 70px;
+        font-size: 22px !important;
         font-weight: bold;
         color: white !important;
-        border-radius: 15px;
+        border-radius: 10px;
+        border: none;
         margin-bottom: 10px;
+        transition: 0.3s;
     }
-    /* Couleur Débutant */
-    .stButton > button[kind="primary"]:nth-of-type(1) { background-color: #1E90FF !important; border: none; }
-    /* Couleur Intermédiaire */
-    .stButton > button[kind="secondary"] { background-color: #FF8C00 !important; color: white !important; border: none; }
-    /* Couleur Avancé (on utilise un hack CSS ou une logique de colonne) */
+    /* Couleur Débutant : Bleu */
+    div.stButton > button:nth-child(1) { background-color: #007bff !important; }
+    /* Couleur Intermédiaire : Orange */
+    div.stButton > button:nth-child(2) { background-color: #ff8c00 !important; }
+    /* Couleur Avancé : Vert */
+    div.stButton > button:nth-child(3) { background-color: #28a745 !important; }
+    
+    .stButton > button:hover { opacity: 0.8; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. INITIALISATION DES ÉTATS ---
+# --- 2. INITIALISATION ---
 if 'etape' not in st.session_state: st.session_state.etape = "start_page"
 if 'niveau' not in st.session_state: st.session_state.niveau = "Débutant"
 if 'leçon_index' not in st.session_state: st.session_state.leçon_index = 0
@@ -37,17 +43,15 @@ if 'feedback_erreur' not in st.session_state: st.session_state.feedback_erreur =
 # --- 3. PROGRAMME PÉDAGOGIQUE ---
 PROGRAMME = {
     "Débutant": [
-        {"titre": "Se Présenter", "regle": "Utilisez 'My name is' pour le nom.", "ex": "My name is Clarisse.", "test": "Traduisez : 'Mon nom est Marc'", "rep": "my name is marc", "aide": "En anglais, on dit 'My name IS'."},
-        {"titre": "Le Verbe ÊTRE", "regle": "I am, You are, He/She/It is.", "ex": "She is a teacher.", "test": "Traduisez : 'Elle est professeur' (teacher)", "rep": "she is a teacher", "aide": "Pour 'Elle est', on utilise 'She is'."},
-        {"titre": "Les Articles A/AN", "regle": "'A' (consonne), 'AN' (voyelle).", "ex": "A dog, An apple.", "test": "Comment dit-on 'Une pomme' ? (apple)", "rep": "an apple", "aide": "Utilisez 'an' car 'apple' commence par une voyelle."},
-        {"titre": "Le Verbe AVOIR", "regle": "Possession : I have got.", "ex": "I have got a cat.", "test": "Traduisez : 'J'ai un chat' (a cat)", "rep": "i have got a cat", "aide": "La structure est 'I have got'."},
-        {"titre": "Le Présent Simple", "regle": "Ajoutez 's' à la 3ème personne.", "ex": "He works in London.", "test": "Traduisez : 'Il travaille' (work)", "rep": "he works", "aide": "N'oubliez pas le 's' avec 'He'."}
+        {"titre": "Se Présenter", "regle": "Utilisez 'My name is' pour le nom.", "ex": "My name is Clarisse.", "test": "Traduisez : 'Mon nom est Marc'", "rep": "my name is marc", "aide": "Structure : My name + IS + Prénom."},
+        {"titre": "Le Verbe ÊTRE", "regle": "I am, You are, He/She/It is.", "ex": "She is a teacher.", "test": "Traduisez : 'Elle est professeur' (teacher)", "rep": "she is a teacher", "aide": "Pour elle, on utilise 'She is'."},
+        {"titre": "Les Articles A/AN", "regle": "'A' (consonne), 'AN' (voyelle).", "ex": "A dog, An apple.", "test": "Comment dit-on 'Une pomme' ? (apple)", "rep": "an apple", "aide": "Apple commence par une voyelle, utilisez 'an'."}
     ],
     "Intermédiaire": [
-        {"titre": "Le Présent Continu", "regle": "BE + Verbe-ING.", "ex": "I am eating.", "test": "Traduisez : 'Je suis en train de manger'", "rep": "i am eating", "aide": "Utilisez 'am' + 'verbe-ing'."}
+        {"titre": "Le Présent Continu", "regle": "BE + Verbe-ING.", "ex": "I am eating.", "test": "Traduisez : 'Je suis en train de manger'", "rep": "i am eating", "aide": "Utilisez am/is/are + verbe-ing."}
     ],
     "Avancé": [
-        {"titre": "Le Present Perfect", "regle": "HAVE + Participe passé.", "ex": "I have lost my keys.", "test": "Traduisez : 'J'ai perdu mes clés' (lost my keys)", "rep": "i have lost my keys", "aide": "Utilisez l'auxiliaire 'have'."}
+        {"titre": "Le Present Perfect", "regle": "HAVE + Participe passé.", "ex": "I have lost my keys.", "test": "Traduisez : 'J'ai perdu mes clés' (lost my keys)", "rep": "i have lost my keys", "aide": "Utilisez l'auxiliaire HAVE."}
     ]
 }
 
@@ -79,32 +83,28 @@ if st.session_state.etape == "start_page":
 
 elif st.session_state.etape == "presentation":
     st.title("🎓 Clarisse English Academy")
-    intro = "Bonjour, je me présente, je m'appelle Clarisse. Choisissez votre niveau :"
-    st.write(intro)
+    st.write("Bonjour, je m'appelle Clarisse. Choisissez votre niveau :")
     
     if st.session_state.last_audio_key != "intro":
-        parler_simple(intro)
+        parler_simple("Bonjour, je m'appelle Clarisse. Choisissez votre niveau.")
         st.session_state.last_audio_key = "intro"
     
-    # Boutons empilés verticalement avec couleurs spécifiques
-    if st.button("🔵 Débutant", use_container_width=True):
-        st.session_state.update({"niveau": "Débutant", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5, "xp": 0})
+    # Boutons verticaux avec couleurs pleines
+    if st.button("DÉBUTANT", use_container_width=True):
+        st.session_state.update({"niveau": "Débutant", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5})
         st.rerun()
-        
-    if st.button("🟠 Intermédiaire", use_container_width=True):
-        st.session_state.update({"niveau": "Intermédiaire", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5, "xp": 0})
+    if st.button("INTERMÉDIAIRE", use_container_width=True):
+        st.session_state.update({"niveau": "Intermédiaire", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5})
         st.rerun()
-        
-    if st.button("🟢 Avancé", use_container_width=True):
-        st.session_state.update({"niveau": "Avancé", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5, "xp": 0})
+    if st.button("AVANCÉ", use_container_width=True):
+        st.session_state.update({"niveau": "Avancé", "etape": "cours", "leçon_index": 0, "erreurs": [], "vies": 5})
         st.rerun()
 
 elif st.session_state.etape == "cours":
     liste = PROGRAMME[st.session_state.niveau]
     
     with st.sidebar:
-        st.write(f"### 👤 Profil")
-        st.write(f"❤️ Vies : {'❤️' * st.session_state.vies}")
+        st.write(f"### ❤️ Vies : {'❤️' * st.session_state.vies}")
         st.write(f"⭐ XP : {st.session_state.xp}")
         if st.button("Quitter"):
             st.session_state.etape = "presentation"
@@ -125,7 +125,7 @@ elif st.session_state.etape == "cours":
     else:
         if st.session_state.erreurs:
             leçon = st.session_state.erreurs[0]
-            st.warning("🔄 RÉVISION")
+            st.warning("🔄 SESSION DE RÉVISION")
             titre = "Rattrapage"
         else:
             st.session_state.etape = "fin"
@@ -140,8 +140,8 @@ elif st.session_state.etape == "cours":
     st.info(f"*Règle :* {leçon['regle']}")
     
     if st.session_state.feedback_erreur:
-        st.error(f"Correction : *{leçon['rep']}*")
-        st.info(f"💡 {st.session_state.feedback_erreur}")
+        st.error(f"❌ La correction était : *{leçon['rep']}*")
+        st.warning(f"💡 {st.session_state.feedback_erreur}")
         if st.button("Continuer"):
             st.session_state.feedback_erreur = None
             if st.session_state.mode_revision:
@@ -155,7 +155,7 @@ elif st.session_state.etape == "cours":
             rep = st.text_input("Réponse :").lower().strip()
             if st.form_submit_button("Vérifier"):
                 if rep == leçon['rep']:
-                    st.success("Correct !")
+                    st.success("✨ Correct !")
                     st.session_state.xp += 10
                     if st.session_state.mode_revision:
                         st.session_state.erreurs.pop(0)
@@ -167,14 +167,11 @@ elif st.session_state.etape == "cours":
                     st.session_state.feedback_erreur = leçon['aide']
                     if leçon not in st.session_state.erreurs:
                         st.session_state.erreurs.append(leçon)
-                    if st.session_state.vies <= 0:
-                        st.error("Plus de vies !")
-                        st.session_state.update({"leçon_index": 0, "vies": 5, "erreurs": []})
                     st.rerun()
 
 elif st.session_state.etape == "fin":
     st.balloons()
-    st.success(f"Niveau {st.session_state.niveau} terminé !")
-    if st.button("Menu principal"):
-        st.session_state.etape = "presentation"
+    st.success("Niveau terminé !")
+    if st.button("Retour au menu"):
+        st.session_state.update({"etape": "presentation", "leçon_index": 0, "erreurs": [], "mode_revision": False})
         st.rerun()
