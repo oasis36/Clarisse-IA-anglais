@@ -3,60 +3,51 @@ import streamlit as st
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="Clarisse English Academy", layout="wide")
 
-# --- 2. STYLE CSS SIMPLIFIÉ ET PUISSANT ---
-st.markdown("""
-    <style>
-    /* Force la taille et le texte des boutons */
-    .stButton > button {
-        height: 80px !important;
-        width: 100% !important;
-        font-size: 24px !important;
-        font-weight: bold !important;
-        color: white !important;
-        border-radius: 15px !important;
-        text-transform: uppercase !important;
-        border: None !important;
-    }
-    
-    /* Couleurs par position dans la page */
-    /* Bouton 1 (Vert) */
-    div.stButton:nth-of-type(1) button { background-color: #28a745 !important; }
-    /* Bouton 2 (Orange) */
-    div.stButton:nth-of-type(2) button { background-color: #ff8c00 !important; }
-    /* Bouton 3 (Violet) */
-    div.stButton:nth-of-type(3) button { background-color: #6f42c1 !important; }
-    
-    /* Bouton DÉMARRER (Gris/Noir) */
-    .start-btn button { background-color: #343a40 !important; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- 3. INITIALISATION ---
+# --- 2. INITIALISATION ---
 if 'etape' not in st.session_state: st.session_state.etape = "start_page"
 if 'vies' not in st.session_state: st.session_state.vies = 5
 if 'xp' not in st.session_state: st.session_state.xp = 0
+if 'niveau' not in st.session_state: st.session_state.niveau = None
 
-# --- 4. AUDIO ---
+# --- 3. FONCTION AUDIO ---
 def parler(txt):
     js = f"<script>window.speechSynthesis.cancel(); var m = new SpeechSynthesisUtterance('{txt.replace("'", "\\'")}'); m.lang = 'fr-FR'; window.speechSynthesis.speak(m);</script>"
     st.components.v1.html(js, height=0)
+
+# --- 4. LOGIQUE DE NAVIGATION VIA URL PARAMS (POUR LES BOUTONS HTML) ---
+# On utilise les paramètres d'URL pour détecter le clic sur les boutons HTML
+params = st.query_params
+
+if "action" in params:
+    action = params["action"]
+    if action == "demarrer":
+        st.session_state.etape = "presentation"
+    elif action in ["Débutant", "Intermédiaire", "Avancé"]:
+        st.session_state.niveau = action
+        st.session_state.etape = "cours"
+    # On nettoie l'URL pour éviter les boucles
+    st.query_params.clear()
+    st.rerun()
 
 # --- 5. INTERFACE ---
 
 # ÉTAPE 0 : DÉMARRAGE
 if st.session_state.etape == "start_page":
     st.markdown("<h1 style='text-align: center;'>🎓 Clarisse English Academy</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Prêt à commencer ?</p>", unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.markdown('<div class="start-btn">', unsafe_allow_html=True)
-        if st.button("DÉMARRER"):
-            st.session_state.etape = "presentation"
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+    # Bouton HTML Centré
+    st.markdown("""
+        <div style="display: flex; justify-content: center;">
+            <a href="/?action=demarrer" target="_self" style="
+                background-color: #343a40; color: white; padding: 20px 100px; 
+                text-decoration: none; font-size: 24px; font-weight: bold; 
+                border-radius: 15px; text-transform: uppercase;">
+                DÉMARRER
+            </a>
+        </div>
+    """, unsafe_allow_html=True)
 
-# ÉTAPE 1 : PRÉSENTATION
+# ÉTAPE 1 : PRÉSENTATION & CHOIX DU NIVEAU
 elif st.session_state.etape == "presentation":
     st.markdown("<h1 style='text-align: center;'>🎓 Clarisse English Academy</h1>", unsafe_allow_html=True)
     msg = "Bonjour, je m'appelle Clarisse. Quel est ton niveau actuel ?"
@@ -64,26 +55,35 @@ elif st.session_state.etape == "presentation":
     
     parler(msg)
     
-    # Centrage des 3 boutons de niveau
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("DÉBUTANT"):
-            st.session_state.update({"niveau": "Débutant", "etape": "cours"})
-            st.rerun()
-        if st.button("INTERMÉDIAIRE"):
-            st.session_state.update({"niveau": "Intermédiaire", "etape": "cours"})
-            st.rerun()
-        if st.button("AVANCÉ"):
-            st.session_state.update({"niveau": "Avancé", "etape": "cours"})
-            st.rerun()
+    # Boutons HTML Centrés avec 3 Couleurs différentes
+    st.markdown("""
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+            <a href="/?action=Débutant" target="_self" style="
+                background-color: #28a745; color: white; width: 400px; padding: 20px; 
+                text-align: center; text-decoration: none; font-size: 22px; font-weight: bold; 
+                border-radius: 15px; text-transform: uppercase;">
+                DÉBUTANT
+            </a>
+            <a href="/?action=Intermédiaire" target="_self" style="
+                background-color: #ff8c00; color: white; width: 400px; padding: 20px; 
+                text-align: center; text-decoration: none; font-size: 22px; font-weight: bold; 
+                border-radius: 15px; text-transform: uppercase;">
+                INTERMÉDIAIRE
+            </a>
+            <a href="/?action=Avancé" target="_self" style="
+                background-color: #6f42c1; color: white; width: 400px; padding: 20px; 
+                text-align: center; text-decoration: none; font-size: 22px; font-weight: bold; 
+                border-radius: 15px; text-transform: uppercase;">
+                AVANCÉ
+            </a>
+        </div>
+    """, unsafe_allow_html=True)
 
-# ÉTAPE 2 : COURS (STRUCTURE VIDE POUR LE TEST)
+# ÉTAPE 2 : COURS (STRUCTURE DE BASE)
 elif st.session_state.etape == "cours":
     st.markdown(f"<h3 style='text-align: center;'>❤️ Vies : {st.session_state.vies} | ⭐ XP : {st.session_state.xp}</h3>", unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align: center;'>Niveau : {st.session_state.niveau}</p>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align: center;'>Niveau : {st.session_state.niveau}</h2>", unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("RETOUR AU MENU"):
-            st.session_state.etape = "presentation"
-            st.rerun()
+    if st.button("RETOUR AU MENU"):
+        st.session_state.etape = "presentation"
+        st.rerun()
