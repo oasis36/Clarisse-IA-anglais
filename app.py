@@ -46,38 +46,49 @@ PROGRAMME = {
     ]
 }
 
-# --- 4. FONCTION AUDIO ---
-def parler(texte_en, texte_fr=None):
-    # Nettoyage pour l'anglais
-    phrase_en = re.sub(r'\(.*?\)', '', texte_en).replace("'", "\\'")
+# --- 4. FONCTION AUDIO (Séquence : Annonce FR -> Exemples EN -> Question FR) ---
+def parler_sequence(annonce_fr, exemple_en, question_fr):
+    # Nettoyage
+    exemple_en = re.sub(r'\(.*?\)', '', exemple_en).replace("'", "\\'")
+    annonce_fr = annonce_fr.replace("'", "\\'")
+    question_fr = question_fr.replace("'", "\\'")
     
-    # Construction du script JS
-    if texte_fr:
-        phrase_fr = texte_fr.replace("'", "\\'")
-        js_code = f"""
-        window.speechSynthesis.cancel();
-        var m_fr_intro = new SpeechSynthesisUtterance('{phrase_fr}');
-        m_fr_intro.lang = 'fr-FR';
-        m_fr_intro.rate = 0.9;
-        
-        var m_en = new SpeechSynthesisUtterance('{phrase_en}');
-        m_en.lang = 'en-US';
-        m_en.rate = 0.8;
+    js_code = f"""
+    <script>
+    window.speechSynthesis.cancel();
+    
+    var m_annonce = new SpeechSynthesisUtterance('{annonce_fr}');
+    m_annonce.lang = 'fr-FR';
+    m_annonce.rate = 0.9;
+    
+    var m_exemple = new SpeechSynthesisUtterance('{exemple_en}');
+    m_exemple.lang = 'en-US';
+    m_exemple.rate = 0.8;
+    
+    var m_question = new SpeechSynthesisUtterance('{question_fr}');
+    m_question.lang = 'fr-FR';
+    m_question.rate = 0.9;
 
-        m_fr_intro.onend = function() {{ window.speechSynthesis.speak(m_en); }};
-        window.speechSynthesis.speak(m_fr_intro);
-        """
-    else:
-        # Cas de l'intro (Français uniquement)
-        js_code = f"""
-        window.speechSynthesis.cancel();
-        var m = new SpeechSynthesisUtterance('{phrase_en}');
-        m.lang = 'fr-FR';
-        m.rate = 0.9;
-        window.speechSynthesis.speak(m);
-        """
+    // Enchaînement : Annonce -> Exemple -> Question
+    m_annonce.onend = function() {{ window.speechSynthesis.speak(m_exemple); }};
+    m_exemple.onend = function() {{ window.speechSynthesis.speak(m_question); }};
+    
+    window.speechSynthesis.speak(m_annonce);
+    </script>
+    """
+    st.components.v1.html(js_code, height=0)
 
-    st.components.v1.html(f"<script>{js_code}</script>", height=0)
+def parler_simple(texte_fr):
+    js_code = f"""
+    <script>
+    window.speechSynthesis.cancel();
+    var m = new SpeechSynthesisUtterance('{texte_fr.replace("'", "\\'")}');
+    m.lang = 'fr-FR';
+    m.rate = 0.9;
+    window.speechSynthesis.speak(m);
+    </script>
+    """
+    st.components.v1.html(js_code, height=0)
 
 # --- 5. INTERFACE ---
 
@@ -87,7 +98,7 @@ if st.session_state.etape == "presentation":
     st.write(intro)
     
     if st.session_state.last_audio_key != "intro":
-        parler(intro)
+        parler_simple(intro)
         st.session_state.last_audio_key = "intro"
 
     c1, c2, c3 = st.columns(3)
@@ -108,7 +119,7 @@ elif st.session_state.etape == "cours":
         if st.session_state.leçon_index < len(liste_base):
             leçon = liste_base[st.session_state.leçon_index]
             titre_page = f"Leçon {st.session_state.leçon_index + 1} : {leçon['titre']}"
-            phrase_annonce = f"Leçon numéro {st.session_state.leçon_index + 1}. {leçon['titre']}. Voici la question : {leçon['test']}"
+            annonce = f"Leçon numéro {st.session_state.leçon_index + 1}. {leçon['titre']}."
         else:
             st.balloons()
             st.success("Félicitations ! Vous avez terminé ce niveau.")
@@ -120,12 +131,12 @@ elif st.session_state.etape == "cours":
     else:
         leçon = st.session_state.erreurs[0]
         titre_page = f"Révision : {leçon['titre']}"
-        phrase_annonce = f"Révision de la leçon : {leçon['titre']}. La question était : {leçon['test']}"
+        annonce = f"Révision de la leçon : {leçon['titre']}."
 
-    # Audio Automatique : Annonce le numéro/titre/question (FR) puis l'exemple (EN)
+    # Audio Automatique avec la nouvelle séquence
     audio_key = f"{st.session_state.niveau}_{st.session_state.leçon_index}_{st.session_state.mode_revision}"
     if st.session_state.last_audio_key != audio_key:
-        parler(leçon['ex'], phrase_annonce)
+        parler_sequence(annonce, leçon['ex'], leçon['test'])
         st.session_state.last_audio_key = audio_key
 
     st.title(titre_page)
