@@ -4,52 +4,67 @@ import re
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="Clarisse English Academy", page_icon="🎓", layout="wide")
 
-# Style CSS pour les couleurs spécifiques (Bleu, Orange, Vert)
+# --- 2. STYLE CSS (CENTRE + 3 COULEURS + PLEINE LARGEUR) ---
 st.markdown("""
     <style>
+    /* Centrer le bloc de boutons et définir la largeur */
+    [data-testid="stVerticalBlock"] > div:has(div.stButton) {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .stButton {
+        width: 60%; /* Largeur des boutons (ajustable) */
+    }
+
     .stButton > button {
-        height: 70px !important;
-        font-size: 22px !important;
+        height: 80px !important;
+        font-size: 24px !important;
         font-weight: bold !important;
         color: white !important;
-        border-radius: 10px !important;
-        margin-bottom: 15px !important;
+        border-radius: 15px !important;
+        margin-bottom: 20px !important;
         width: 100% !important;
+        border: none !important;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
     }
-    /* Page Démarrer : Bouton Gris/Bleu neutre par défaut ou spécifique */
-    /* Page Présentation : Couleurs demandées */
-    div.stButton:nth-of-type(1) button { background-color: #007bff !important; } /* BLEU */
-    div.stButton:nth-of-type(2) button { background-color: #ff8c00 !important; } /* ORANGE */
-    div.stButton:nth-of-type(3) button { background-color: #28a745 !important; } /* VERT */
-    
-    .stButton > button:hover { opacity: 0.8; color: white !important; }
-    
-    .score-box {
-        background-color: #f0f2f6;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        font-size: 20px;
-        font-weight: bold;
+
+    /* Attribution des 3 couleurs différentes par ordre d'apparition */
+    /* 1. DÉBUTANT : BLEU ROYAL */
+    div.stButton:nth-of-type(1) button {
+        background-color: #1E90FF !important;
+    }
+    /* 2. INTERMÉDIAIRE : ORANGE VIF */
+    div.stButton:nth-of-type(2) button {
+        background-color: #FF8C00 !important;
+    }
+    /* 3. AVANCÉ : VERT ÉMERAUDE */
+    div.stButton:nth-of-type(3) button {
+        background-color: #2E8B57 !important;
+    }
+
+    .stButton > button:hover {
+        filter: brightness(1.1);
+        transform: scale(1.02);
+        transition: 0.2s;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. INITIALISATION ---
+# --- 3. INITIALISATION ---
 if 'etape' not in st.session_state: st.session_state.etape = "start_page"
-if 'niveau' not in st.session_state: st.session_state.niveau = "Débutant"
 if 'leçon_index' not in st.session_state: st.session_state.leçon_index = 0
 if 'vies' not in st.session_state: st.session_state.vies = 5
 if 'xp' not in st.session_state: st.session_state.xp = 0
-if 'erreurs' not in st.session_state: st.session_state.erreurs = []
 if 'last_audio_key' not in st.session_state: st.session_state.last_audio_key = ""
 
-# --- 3. PROGRAMME PÉDAGOGIQUE ---
+# --- 4. PROGRAMME PÉDAGOGIQUE ---
 PROGRAMME = {
     "Débutant": [
         {"titre": "Se Présenter", "regle": "Utilisez 'My name is' pour le nom.", "ex": "My name is Clarisse.", "test": "Traduisez : 'Mon nom est Marc'", "rep": "my name is marc", "aide": "Structure : My name + IS + Prénom."},
-        {"titre": "Le Verbe ÊTRE", "regle": "I am, You are, He/She/It is.", "ex": "She is a teacher.", "test": "Traduisez : 'Elle est professeur'", "rep": "she is a teacher", "aide": "Pour 'elle', on utilise 'She is'."},
-        {"titre": "Les Articles A/AN", "regle": "'A' (consonne), 'AN' (voyelle).", "ex": "A dog, An apple.", "test": "Comment dit-on 'Une pomme' ?", "rep": "an apple", "aide": "Apple commence par une voyelle."}
+        {"titre": "Le Verbe ÊTRE", "regle": "I am, You are, He/She/It is.", "ex": "She is a teacher.", "test": "Traduisez : 'Elle est professeur'", "rep": "she is a teacher", "aide": "Pour 'elle', on utilise 'She is'."}
     ],
     "Intermédiaire": [
         {"titre": "Le Présent Continu", "regle": "BE + Verbe-ING.", "ex": "I am eating.", "test": "Traduisez : 'Je suis en train de manger'", "rep": "i am eating", "aide": "Utilisez am/is/are + verbe-ing."}
@@ -59,7 +74,6 @@ PROGRAMME = {
     ]
 }
 
-# --- 4. FONCTION AUDIO ---
 def parler(txt):
     js = f"<script>window.speechSynthesis.cancel(); var m = new SpeechSynthesisUtterance('{txt.replace("'", "\\'")}'); m.lang = 'fr-FR'; window.speechSynthesis.speak(m);</script>"
     st.components.v1.html(js, height=0)
@@ -70,6 +84,7 @@ def parler(txt):
 if st.session_state.etape == "start_page":
     st.title("🎓 Clarisse English Academy")
     st.write("### Bienvenue dans votre espace d'apprentissage.")
+    # Le bouton démarrer est seul, il sera bleu par le CSS (1er bouton)
     if st.button("DÉMARRER"):
         st.session_state.etape = "presentation"
         st.rerun()
@@ -84,33 +99,28 @@ elif st.session_state.etape == "presentation":
         parler(msg)
         st.session_state.last_audio_key = "intro"
     
+    # Ici les 3 boutons apparaîtront centrés et de 3 couleurs différentes
     if st.button("DÉBUTANT"):
-        st.session_state.update({"niveau": "Débutant", "etape": "cours", "leçon_index": 0, "vies": 5})
+        st.session_state.update({"niveau": "Débutant", "etape": "cours", "leçon_index": 0})
         st.rerun()
     if st.button("INTERMÉDIAIRE"):
-        st.session_state.update({"niveau": "Intermédiaire", "etape": "cours", "leçon_index": 0, "vies": 5})
+        st.session_state.update({"niveau": "Intermédiaire", "etape": "cours", "leçon_index": 0})
         st.rerun()
     if st.button("AVANCÉ"):
-        st.session_state.update({"niveau": "Avancé", "etape": "cours", "leçon_index": 0, "vies": 5})
+        st.session_state.update({"niveau": "Avancé", "etape": "cours", "leçon_index": 0})
         st.rerun()
 
 # ÉTAPE 2 : COURS
 elif st.session_state.etape == "cours":
-    # Barre de score
-    c1, c2 = st.columns(2)
-    c1.markdown(f"<div class='score-box'>❤️ Vies : {st.session_state.vies}</div>", unsafe_allow_html=True)
-    c2.markdown(f"<div class='score-box'>⭐ XP : {st.session_state.xp}</div>", unsafe_allow_html=True)
-    st.divider()
-
+    st.markdown(f"❤️ Vies : {st.session_state.vies} | ⭐ XP : {st.session_state.xp}")
     cours = PROGRAMME[st.session_state.niveau]
     idx = st.session_state.leçon_index
     
     if idx < len(cours):
         leçon = cours[idx]
-        st.header(f"Leçon {idx + 1} : {leçon['titre']}")
-        st.info(f"*Règle :* {leçon['regle']}\n\n**Exemple :** {leçon['ex']}")
-        
-        reponse = st.text_input(f"EXERCICE : {leçon['test']}", key=f"q_{idx}").lower().strip()
+        st.header(f"Leçon : {leçon['titre']}")
+        st.info(leçon['regle'])
+        reponse = st.text_input(leçon['test']).lower().strip()
         
         if st.button("Valider"):
             if reponse == leçon['rep']:
@@ -131,7 +141,6 @@ elif st.session_state.etape == "cours":
             st.session_state.update({"etape": "presentation", "leçon_index": 0})
             st.rerun()
 
-# ÉTAPE 3 : GAME OVER
 elif st.session_state.etape == "game_over":
     st.error("Jeu terminé ! Vous n'avez plus de vies.")
     if st.button("Recommencer"):
