@@ -3,44 +3,31 @@ import streamlit as st
 # --- 1. CONFIGURATION ---
 st.set_page_config(page_title="Clarisse English Academy", layout="wide")
 
-# --- 2. LE STYLE INVASIF (FORÇAGE BRUTAL) ---
+# --- 2. STYLE CSS SIMPLIFIÉ ET PUISSANT ---
 st.markdown("""
     <style>
-    /* Centrage de la colonne de boutons */
-    [data-testid="stVerticalBlock"] {
-        align-items: center !important;
-    }
-
-    /* Style commun forcé */
-    button {
+    /* Force la taille et le texte des boutons */
+    .stButton > button {
         height: 80px !important;
-        width: 500px !important;
-        font-size: 26px !important;
-        font-weight: 900 !important;
+        width: 100% !important;
+        font-size: 24px !important;
+        font-weight: bold !important;
         color: white !important;
-        border-radius: 20px !important;
-        border: 4px solid rgba(255,255,255,0.2) !important;
-        box-shadow: 0px 10px 20px rgba(0,0,0,0.4) !important;
+        border-radius: 15px !important;
         text-transform: uppercase !important;
+        border: None !important;
     }
-
-    /* CIBLAGE PAR TOOLTIP (MÉTHODE LA PLUS STABLE POUR LES COULEURS) */
-    /* DÉBUTANT : VERT FLASH */
-    button[aria-label="DEB"] { background-color: #00C851 !important; }
     
-    /* INTERMÉDIAIRE : ORANGE ÉLECTRIQUE */
-    button[aria-label="INT"] { background-color: #FF8800 !important; }
+    /* Couleurs par position dans la page */
+    /* Bouton 1 (Vert) */
+    div.stButton:nth-of-type(1) button { background-color: #28a745 !important; }
+    /* Bouton 2 (Orange) */
+    div.stButton:nth-of-type(2) button { background-color: #ff8c00 !important; }
+    /* Bouton 3 (Violet) */
+    div.stButton:nth-of-type(3) button { background-color: #6f42c1 !important; }
     
-    /* AVANCÉ : VIOLET PROFOND */
-    button[aria-label="AVA"] { background-color: #AA66CC !important; }
-    
-    /* DÉMARRER : NOIR/GRIS */
-    button[aria-label="STA"] { background-color: #2E2E2E !important; }
-
-    button:hover {
-        transform: scale(1.05) !important;
-        filter: brightness(1.2) !important;
-    }
+    /* Bouton DÉMARRER (Gris/Noir) */
+    .start-btn button { background-color: #343a40 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -49,19 +36,27 @@ if 'etape' not in st.session_state: st.session_state.etape = "start_page"
 if 'vies' not in st.session_state: st.session_state.vies = 5
 if 'xp' not in st.session_state: st.session_state.xp = 0
 
-# --- 4. LOGIQUE AUDIO ---
+# --- 4. AUDIO ---
 def parler(txt):
     js = f"<script>window.speechSynthesis.cancel(); var m = new SpeechSynthesisUtterance('{txt.replace("'", "\\'")}'); m.lang = 'fr-FR'; window.speechSynthesis.speak(m);</script>"
     st.components.v1.html(js, height=0)
 
 # --- 5. INTERFACE ---
 
+# ÉTAPE 0 : DÉMARRAGE
 if st.session_state.etape == "start_page":
     st.markdown("<h1 style='text-align: center;'>🎓 Clarisse English Academy</h1>", unsafe_allow_html=True)
-    if st.button("DÉMARRER", help="STA"):
-        st.session_state.etape = "presentation"
-        st.rerun()
+    st.markdown("<p style='text-align: center;'>Prêt à commencer ?</p>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown('<div class="start-btn">', unsafe_allow_html=True)
+        if st.button("DÉMARRER"):
+            st.session_state.etape = "presentation"
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
+# ÉTAPE 1 : PRÉSENTATION
 elif st.session_state.etape == "presentation":
     st.markdown("<h1 style='text-align: center;'>🎓 Clarisse English Academy</h1>", unsafe_allow_html=True)
     msg = "Bonjour, je m'appelle Clarisse. Quel est ton niveau actuel ?"
@@ -69,22 +64,26 @@ elif st.session_state.etape == "presentation":
     
     parler(msg)
     
-    # Boutons avec identifiants forcés via le paramètre 'help'
-    if st.button("DÉBUTANT", help="DEB"):
-        st.session_state.update({"niveau": "Débutant", "etape": "cours", "index": 0})
-        st.rerun()
-        
-    if st.button("INTERMÉDIAIRE", help="INT"):
-        st.session_state.update({"niveau": "Intermédiaire", "etape": "cours", "index": 0})
-        st.rerun()
-        
-    if st.button("AVANCÉ", help="AVA"):
-        st.session_state.update({"niveau": "Avancé", "etape": "cours", "index": 0})
-        st.rerun()
+    # Centrage des 3 boutons de niveau
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("DÉBUTANT"):
+            st.session_state.update({"niveau": "Débutant", "etape": "cours"})
+            st.rerun()
+        if st.button("INTERMÉDIAIRE"):
+            st.session_state.update({"niveau": "Intermédiaire", "etape": "cours"})
+            st.rerun()
+        if st.button("AVANCÉ"):
+            st.session_state.update({"niveau": "Avancé", "etape": "cours"})
+            st.rerun()
 
+# ÉTAPE 2 : COURS (STRUCTURE VIDE POUR LE TEST)
 elif st.session_state.etape == "cours":
-    st.write(f"❤️ {st.session_state.vies} | ⭐ {st.session_state.xp}")
-    st.write(f"Niveau sélectionné : {st.session_state.niveau}")
-    if st.button("Retour", help="STA"):
-        st.session_state.etape = "presentation"
-        st.rerun()
+    st.markdown(f"<h3 style='text-align: center;'>❤️ Vies : {st.session_state.vies} | ⭐ XP : {st.session_state.xp}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center;'>Niveau : {st.session_state.niveau}</p>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("RETOUR AU MENU"):
+            st.session_state.etape = "presentation"
+            st.rerun()
