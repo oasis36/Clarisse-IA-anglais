@@ -136,4 +136,16 @@ elif st.session_state.etape == "cours":
         reponse = st.text_input("Ta réponse :").lower().strip()
         submit = st.form_submit_button("Valider")
         
-        if submit
+        if submit:
+            if reponse == leçon['rep']:
+                st.success("✨ C'est bien !")
+                if st.session_state.mode_revision:
+                    st.session_state.erreurs.pop(0)
+                    if not st.session_state.erreurs: st.session_state.mode_revision = False
+                else:
+                    st.session_state.leçon_index += 1
+                st.rerun()
+            else:
+                st.error(f"❌ Mauvaise réponse. La bonne était : '{leçon['rep']}'")
+                if leçon not in st.session_state.erreurs:
+                    st.session_state.erreurs.append(leçon)
